@@ -1,0 +1,14 @@
+{
+  "Header": {
+    "learn": "Learn",
+    "about-me": "About Me",
+    "portfolio": "Portfolio",
+    "blog": "Blog",
+    "login": "Login"
+  },
+  "HeroSection": {
+    "title": "Artistic & Unique Interior Design",
+    "description": "From interior styling to artistic installations for homes, stores, and public spaces",
+    "ctaButton": "View Portfolio"
+  }
+}
