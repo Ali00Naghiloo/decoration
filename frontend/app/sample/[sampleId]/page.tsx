@@ -1,8 +1,12 @@
 import SamplePage from "@/src/pages/SamplePage";
 import React from "react";
 
-export default function page({ params }: { params: { sampleId: string } }) {
-  const { sampleId } = params;
+export default async function page({
+  params,
+}: {
+  params: { sampleId: string };
+}) {
+  const { sampleId } = await params;
 
   return (
     <>

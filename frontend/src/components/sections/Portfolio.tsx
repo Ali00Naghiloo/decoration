@@ -1,9 +1,12 @@
 import React from "react";
+import HeroSection from "./HeroSection";
 
 export default function Portfolio() {
   return (
     <>
-      <div>Portfolio</div>
+      <div className="min-h-screen">
+        <HeroSection />
+      </div>
     </>
   );
 }
