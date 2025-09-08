@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { satoshiFont } from "@/app/fonts";
 import "./globals.css";
+import SmoothScroller from "@/src/components/layout/SmoothScroller";
 
 export const metadata: Metadata = {
   title: "Interior Design Portfolio",
@@ -21,7 +22,7 @@ export default function RootLayout({
     <html className={satoshiFont.variable}>
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <SmoothScroller>{children}</SmoothScroller>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -2,14 +2,14 @@ import { useTranslations } from "next-intl";
 import React from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { Globe, LogIn, Phone } from "lucide-react";
+import { Globe, LogIn, Menu, Phone } from "lucide-react";
 
 export default function Header() {
   const t = useTranslations("Header");
 
   return (
     <>
-      <div className="relative w-full flex justify-between p-6">
+      <div className="hidden relative w-full xl:flex justify-between p-6 h-[10vh]">
         <Image
           src="/logo.svg"
           alt={t("logoAlt")}
@@ -18,7 +18,7 @@ export default function Header() {
           className="!text-[#006FFF]"
         />
 
-        <div className="flex justify-center gap-10 absolute top-0 left-1/2 transform -translate-x-[50%] h-full items-center">
+        <div className="hidden xl:flex justify-center gap-10 absolute top-0 left-1/2 transform -translate-x-[50%] h-full items-center">
           <Button variant={"link"} className="">
             {t("learn")}
           </Button>
@@ -47,6 +47,25 @@ export default function Header() {
             <div className="bg-blue-600 rounded-[12px] p-2">
               <Phone />
             </div>
+          </Button>
+        </div>
+      </div>
+
+      <div className="xl:hidden flex items-center justify-between p-4">
+        <Image
+          src="/logo.svg"
+          alt={t("logoAlt")}
+          width={52}
+          height={52}
+          className="!text-[#006FFF]"
+        />
+
+        <div className="flex gap-3">
+          <Button className="ml-auto bg-[#F9F9F9]">
+            <LogIn color="#000" />
+          </Button>
+          <Button className="ml-auto bg-[#F9F9F9]">
+            <Menu color="#000" />
           </Button>
         </div>
       </div>

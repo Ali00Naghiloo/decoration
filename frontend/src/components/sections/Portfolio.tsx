@@ -4,7 +4,7 @@ import HeroSection from "./HeroSection";
 export default function Portfolio() {
   return (
     <>
-      <div className="min-h-screen">
+      <div className="flex flex-col">
         <HeroSection />
       </div>
     </>

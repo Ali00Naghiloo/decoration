@@ -1,3 +1,5 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import React from "react";
 import { Button } from "../ui/button";
@@ -24,9 +26,27 @@ export default function Footer() {
     { label: "blog", selected: false },
   ];
 
+  const mobileLinks = [
+    { label: "home", selected: true },
+    { label: "impact", selected: false },
+    { label: "platform", selected: false },
+    { label: "pricing", selected: false },
+    { label: "manifesto", selected: false },
+    { label: "blog", selected: false },
+    { label: "terms-of-service", selected: false },
+    { label: "privacy-policy", selected: false },
+  ];
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // This makes the scrolling smooth
+    });
+  };
+
   return (
     <>
-      <div className="lg:min-h-[750px] flex flex-col p-10 pb-[200px] relative bg-[#000000] text-white rounded-t-[10px]">
+      <div className="hidden lg:min-h-[750px] xl:flex flex-col p-10 pb-[200px] relative bg-[#000000] text-white rounded-t-[10px]">
         <div className="flex justify-between py-5">
           {/* links */}
           <div className="flex flex-col gap-5 font-medium">
@@ -88,6 +108,7 @@ export default function Footer() {
             </Button>
 
             <Button
+              onClick={scrollToTop}
               variant={"secondary"}
               className="rounded-[500px] w-fit py-4.5 !px-1.5"
             >
@@ -101,13 +122,70 @@ export default function Footer() {
           orientation="vertical"
         />
 
-        <div className="flex justify-between flex-wrap py-4">
+        <div className="relative flex justify-between flex-wrap py-4">
           <span>{t("copyright")}</span>
-          <span>{t("privacy-policy")}</span>
+          <span className="absolute left-1/2 top-1/2 translate-x-[-100%] translate-y-[-50%]">
+            {t("privacy-policy")}
+          </span>
           <span>{t("terms-of-service")}</span>
         </div>
 
         {/* gradient background */}
+        <div className="absolute bottom-0 left-0 w-full h-[200px] bg-gradient-to-t from-[#006AF5] to-[#000000] opacity-50"></div>
+      </div>
+
+      {/* mobile version */}
+      <div className="xl:hidden flex flex-col gap-7 px-4 pt-6 pb-[150px] relative bg-[#000000] text-white rounded-t-[10px]">
+        <div className="flex flex-col gap-3">
+          <Image src="/logo.png" alt={t("logoAlt")} width={52} height={52} />
+
+          <p className="text-[rgba(255,255,255,0.4)] font-medium">
+            {t("footer-text")}
+          </p>
+
+          <Button
+            variant="default"
+            className="p-3 h-fit w-fit border-[1px] border-[rgba(255,255,255,0.2)] shadow-inner"
+          >
+            {t("contact")}{" "}
+            <div className="bg-blue-600 rounded-[12px] p-2">
+              <Phone />
+            </div>
+          </Button>
+        </div>
+
+        {/* links */}
+        <div className="h-[180px] flex flex-col flex-wrap gap-3 font-medium">
+          {mobileLinks.map((li) => (
+            <span
+              key={li.label}
+              className={`${
+                li.selected ? "opacity-100" : "opacity-40"
+              } cursor-pointer`}
+            >
+              {t(li.label)}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex gap-4">
+          {socials.map((social) => (
+            <Button key={social.label} className="w-[30px] h-[30px] p-0">
+              <Image
+                className="!text-white"
+                src={social.icon}
+                alt={social.label}
+                width={18}
+                height={18}
+              />
+            </Button>
+          ))}
+        </div>
+
+        <div>
+          <span className="text-white">{t("copyright")}</span>
+        </div>
+
         <div className="absolute bottom-0 left-0 w-full h-[200px] bg-gradient-to-t from-[#006AF5] to-[#000000] opacity-50"></div>
       </div>
     </>

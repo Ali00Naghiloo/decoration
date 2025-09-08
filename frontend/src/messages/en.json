@@ -12,7 +12,14 @@
     "title": "Artistic & Unique Interior Design",
     "description": "From interior styling to artistic installations for homes, stores, and public spaces",
     "ctaButton": "View Portfolio",
-    "read-story": "Read the Story"
+    "read-story": "Read the Story",
+    "customer-stories": "Customer Stories"
+  },
+  "Samples" : {
+    "customer-stories" : "Customer Stories",
+    "all-customer" : "All Customer",
+    "stories" : "Stories",
+    "read-more" : "Read More"
   },
   "Footer": {
     "home": "Home",
