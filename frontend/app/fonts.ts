@@ -31,3 +31,35 @@ export const satoshiFont = localFont({
   variable: "--font-satoshi", // یک متغیر CSS برای استفاده در سراسر پروژه
   display: "swap", // برای بارگذاری بهتر
 });
+
+export const yekanFont = localFont({
+  src: [
+    {
+      path: "../public/fonts/yekan/YekanBakhFaNum-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/yekan/YekanBakhFaNum-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/yekan/YekanBakhFaNum-SemiBold.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/yekan/YekanBakhFaNum-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/yekan/YekanBakhFaNum-Black.ttf",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-yekan", // یک متغیر CSS برای استفاده در سراسر پروژه
+  display: "swap", // برای بارگذاری بهتر
+});

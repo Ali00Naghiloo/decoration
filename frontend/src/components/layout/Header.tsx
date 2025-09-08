@@ -3,6 +3,7 @@ import React from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Globe, LogIn, Menu, Phone } from "lucide-react";
+import LanguageSwitcher from "../sections/LanguageSwitcher";
 
 export default function Header() {
   const t = useTranslations("Header");
@@ -50,6 +51,8 @@ export default function Header() {
           </Button>
         </div>
       </div>
+
+      <LanguageSwitcher />
 
       <div className="xl:hidden flex items-center justify-between p-4">
         <Image

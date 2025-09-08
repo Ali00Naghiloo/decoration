@@ -1,13 +1,12 @@
+// src/middleware.ts
 import createMiddleware from "next-intl/middleware";
 
 export default createMiddleware({
   locales: ["en", "fa"],
-  defaultLocale: "fa",
+  defaultLocale: "en",
 });
 
 export const config = {
-  // This is the crucial change.
-  // We are explicitly telling the middleware to run on the root (`/`)
-  // and on all paths that have a locale prefix.
+  // Use the recommended matcher from the official docs
   matcher: ["/", "/(fa|en)/:path*"],
 };
