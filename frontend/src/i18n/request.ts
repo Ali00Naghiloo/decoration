@@ -1,13 +1,16 @@
-// i18n/request.ts
+import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
+import { routing } from "./routing";
 
-const SUPPORTED = ["en", "fa"] as const;
-
-export default getRequestConfig(async ({ locale }) => {
-  const finalLocale = SUPPORTED.includes(locale as any) ? locale : "en";
+export default getRequestConfig(async ({ requestLocale }) => {
+  // Typically corresponds to the `[locale]` segment
+  const requested = await requestLocale;
+  const locale = hasLocale(routing.locales, requested)
+    ? requested
+    : routing.defaultLocale;
 
   return {
-    locale: finalLocale,
-    messages: (await import(`../messages/${finalLocale}.json`)).default,
+    locale,
+    messages: (await import(`../messages/${locale}.json`)).default,
   };
 });

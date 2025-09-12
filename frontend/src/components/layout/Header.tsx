@@ -35,10 +35,8 @@ export default function Header() {
         </div>
 
         <div className="flex gap-4 items-center">
-          <Button variant={"ghost"} className="">
-            <Globe />
-            En
-          </Button>
+          <LanguageSwitcher />
+
           <Button variant={"ghost"}>
             <LogIn />
             {t("login")}
@@ -51,8 +49,6 @@ export default function Header() {
           </Button>
         </div>
       </div>
-
-      <LanguageSwitcher />
 
       <div className="xl:hidden flex items-center justify-between p-4">
         <Image

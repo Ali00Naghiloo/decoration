@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { satoshiFont, yekanFont } from "@/app/fonts"; // Adjust path if needed
-import "../globals.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "My Portfolio",

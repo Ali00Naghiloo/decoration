@@ -1,38 +1,59 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { routing } from "@/src/i18n/routing";
+import { Button } from "../ui/button";
+import { Globe } from "lucide-react";
+import { useParams } from "next/navigation";
+import { Locale } from "next-intl";
+import { usePathname, useRouter } from "@/src/i18n/navigation";
+import { VscLoading } from "react-icons/vsc";
 
-export default function LanguageSwitcher() {
+export default function LocaleSwitcher() {
+  const t = useTranslations("LocaleSwitcher");
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
+  const params = useParams();
   const locale = useLocale();
 
-  const changeLanguage = (newLocale: string) => {
-    if (newLocale === locale) return;
+  function onSelectChange(event: string) {
+    const nextLocale = event as Locale;
+    startTransition(() => {
+      router.replace(
+        // @ts-expect-error -- TypeScript will validate that only known `params`
+        // are used in combination with a given `pathname`. Since the two will
+        // always match for the current route, we can skip runtime checks.
+        { pathname, params },
+        { locale: nextLocale }
+      );
+    });
+  }
 
-    // Update the URL with the new locale
-    const segments = pathname.split("/");
-    segments[1] = newLocale; // assumes your routes are like /en/... /de/...
-    router.push(segments.join("/"));
-  };
+  if (isPending) return <VscLoading className="animate-spin" />;
 
   return (
-    <div className="flex gap-2">
-      <button
-        onClick={() => changeLanguage("en")}
-        disabled={locale === "en"}
-        className="px-3 py-1 rounded border"
-      >
-        English
-      </button>
-      <button
-        onClick={() => changeLanguage("fa")}
-        disabled={locale === "fa"}
-        className="px-3 py-1 rounded border"
-      >
-        فارسی
-      </button>
-    </div>
+    <>
+      {locale === "fa" ? (
+        <Button
+          onClick={() => onSelectChange("en")}
+          variant={"ghost"}
+          className=""
+        >
+          <Globe />
+          En
+        </Button>
+      ) : (
+        <Button
+          onClick={() => onSelectChange("fa")}
+          variant={"ghost"}
+          className=""
+        >
+          <Globe />
+          Fa
+        </Button>
+      )}
+    </>
   );
 }

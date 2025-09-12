@@ -36,5 +36,9 @@
     "copyright": "© 2025 COMPANY. کلیه حقوق محفوظ است.",
     "privacy-policy": "سیاست حفظ حریم خصوصی",
     "terms-of-service": "شرایط خدمات"
+  },
+  "LocaleSwitcher": {
+    "label": "تغییر زبان",
+    "locale": "{locale, select, fa {🇩🇪 Farsi} en {🇺🇸 English} other {Unknown}}"
   }
 }
