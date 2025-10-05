@@ -1,38 +1,27 @@
-// src/app/[locale]/layout.tsx
+import { TranslationsProvider } from "@/src/hooks/TranslationsProvider";
+import { getDictionary } from "@/src/lib/translations";
 import type { Metadata } from "next";
-import { NextIntlClientProvider, useMessages } from "next-intl";
-import { satoshiFont, yekanFont } from "@/app/fonts"; // Adjust path if needed
-import "../globals.css";
 
 export const metadata: Metadata = {
-  title: "My Portfolio",
-  description: "Interior Design Portfolio",
+  title: "Decoration Portfolio",
+  description: "Welcome to the portfolio",
 };
 
-export function generateStaticParams() {
-  return [{ locale: "en" }, { locale: "fa" }];
-}
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
   params: { locale },
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  const messages = useMessages();
+  const dictionary = await getDictionary(locale);
 
   return (
-    <html
-      lang={locale}
-      dir={locale === "fa" ? "rtl" : "ltr"}
-      className={`${satoshiFont.variable} ${yekanFont.variable}`}
-      suppressHydrationWarning={true}
-    >
-      <body className="antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
+    <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
+      <body>
+        <TranslationsProvider dictionary={dictionary}>
           {children}
-        </NextIntlClientProvider>
+        </TranslationsProvider>
       </body>
     </html>
   );

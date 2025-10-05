@@ -1,59 +1,33 @@
 "use client";
 
-import { useTransition } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { routing } from "@/src/i18n/routing";
-import { Button } from "../ui/button";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Globe } from "lucide-react";
-import { useParams } from "next/navigation";
-import { Locale } from "next-intl";
-import { usePathname, useRouter } from "@/src/i18n/navigation";
-import { VscLoading } from "react-icons/vsc";
+import i18nConfig from "@/src/i18nConfig";
+import { useCurrentLocale } from "next-i18n-router/client";
 
-export default function LocaleSwitcher() {
-  const t = useTranslations("LocaleSwitcher");
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+export default function LanguageSwitcher() {
   const pathname = usePathname();
-  const params = useParams();
-  const locale = useLocale();
+  const currentLocale = useCurrentLocale(i18nConfig);
 
-  function onSelectChange(event: string) {
-    const nextLocale = event as Locale;
-    startTransition(() => {
-      router.replace(
-        // @ts-expect-error -- TypeScript will validate that only known `params`
-        // are used in combination with a given `pathname`. Since the two will
-        // always match for the current route, we can skip runtime checks.
-        { pathname, params },
-        { locale: nextLocale }
-      );
-    });
-  }
+  // Simple toggle logic
+  const nextLocale = currentLocale === "en" ? "fa" : "en";
 
-  if (isPending) return <VscLoading className="animate-spin" />;
+  // This logic is needed to swap the locale in the path
+  const redirectedPathName = (locale: string) => {
+    if (!pathname) return "/";
+    const segments = pathname.split("/");
+    segments[1] = locale;
+    return segments.join("/");
+  };
 
   return (
-    <>
-      {locale === "fa" ? (
-        <Button
-          onClick={() => onSelectChange("en")}
-          variant={"ghost"}
-          className=""
-        >
-          <Globe />
-          En
-        </Button>
-      ) : (
-        <Button
-          onClick={() => onSelectChange("fa")}
-          variant={"ghost"}
-          className=""
-        >
-          <Globe />
-          Fa
-        </Button>
-      )}
-    </>
+    <Link
+      href={redirectedPathName(nextLocale)}
+      className="flex items-center gap-2 font-semibold"
+    >
+      <Globe className="h-5 w-5" />
+      <span>{nextLocale.toUpperCase()}</span>
+    </Link>
   );
 }

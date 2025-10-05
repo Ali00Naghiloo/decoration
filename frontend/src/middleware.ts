@@ -1,12 +1,11 @@
-// src/middleware.ts
-import createMiddleware from "next-intl/middleware";
+import { i18nRouter } from "next-i18n-router";
+import i18nConfig from "./i18nConfig";
 
-export default createMiddleware({
-  locales: ["en", "fa"],
-  defaultLocale: "en",
-});
+export function middleware(request: Request) {
+  return i18nRouter(request, i18nConfig);
+}
 
+// applies this middleware to all routes
 export const config = {
-  // Use the recommended matcher from the official docs
-  matcher: ["/", "/(fa|en)/:path*"],
+  matcher: "/((?!api|_next/static|_next/image|favicon.ico).*)",
 };

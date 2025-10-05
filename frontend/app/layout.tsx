@@ -1,6 +1,5 @@
 // src/app/[locale]/layout.tsx
 import type { Metadata } from "next";
-import { NextIntlClientProvider, useMessages } from "next-intl";
 import { satoshiFont, yekanFont } from "@/app/fonts"; // Adjust path if needed
 import "./globals.css";
 
@@ -20,8 +19,6 @@ export default function RootLayout({
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  const messages = useMessages();
-
   return (
     <html
       lang={locale}
@@ -29,11 +26,7 @@ export default function RootLayout({
       className={`${satoshiFont.variable} ${yekanFont.variable}`}
       suppressHydrationWarning={true}
     >
-      <body className="antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

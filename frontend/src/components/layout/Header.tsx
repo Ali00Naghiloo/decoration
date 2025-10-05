@@ -1,12 +1,14 @@
-import { useTranslations } from "next-intl";
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Globe, LogIn, Menu, Phone } from "lucide-react";
 import LanguageSwitcher from "../sections/LanguageSwitcher";
+import { useTranslation } from "@/src/hooks/TranslationsProvider";
 
 export default function Header() {
-  const t = useTranslations("Header");
+  const t = useTranslation();
 
   return (
     <>

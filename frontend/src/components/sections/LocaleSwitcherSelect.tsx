@@ -1,10 +1,8 @@
 "use client";
 
 import clsx from "clsx";
-import { useParams } from "next/navigation";
-import { Locale } from "next-intl";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ChangeEvent, ReactNode, useTransition } from "react";
-import { usePathname, useRouter } from "@/src/i18n/navigation";
 
 type Props = {
   children: ReactNode;
@@ -23,14 +21,13 @@ export default function LocaleSwitcherSelect({
   const params = useParams();
 
   function onSelectChange(event: ChangeEvent<HTMLSelectElement>) {
-    const nextLocale = event.target.value as Locale;
+    const nextLocale = event.target.value;
     startTransition(() => {
       router.replace(
         // @ts-expect-error -- TypeScript will validate that only known `params`
         // are used in combination with a given `pathname`. Since the two will
         // always match for the current route, we can skip runtime checks.
-        { pathname, params },
-        { locale: nextLocale }
+        { pathname, params: { ...params, locale: nextLocale } }
       );
     });
   }

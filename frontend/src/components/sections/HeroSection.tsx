@@ -1,14 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import React from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { ArrowDown } from "lucide-react";
+import { useTranslation } from "@/src/hooks/TranslationsProvider";
 
 export default function HeroSection() {
-  const t = useTranslations("HeroSection");
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = React.useState(false);
 
   const toggleVisibility = () => {

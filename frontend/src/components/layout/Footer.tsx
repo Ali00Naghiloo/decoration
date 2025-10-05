@@ -1,14 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import React from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import { LogIn, MoveUp, Phone } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
+import { useTranslation } from "@/src/hooks/TranslationsProvider";
 
 export default function Footer() {
-  const t = useTranslations("Footer");
+  const { t } = useTranslation();
 
   const socials = [
     { label: "Facebook", icon: "/icons/facebook.svg", link: "#" },

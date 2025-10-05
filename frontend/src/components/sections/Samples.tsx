@@ -1,10 +1,11 @@
-import { useTranslations } from "next-intl";
+import { useTranslation } from "@/src/hooks/TranslationsProvider";
 import { Badge } from "../ui/badge";
 import SampleCard from "./SampleCard";
 import { SampleTypes } from "@/src/types/sample.types";
 
 export default function Samples() {
-  const t = useTranslations("Samples");
+  const { t } = useTranslation();
+
   const samples: SampleTypes[] = [
     {
       title: "Hitachi Hits 5x More Connects in 30 Days with TitanX",
