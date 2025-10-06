@@ -1,37 +1,18 @@
 "use client";
 
-import { useContext } from "react";
-import { TranslationsContext } from "../providers/TranslationProvider";
+import { useTranslations } from "next-intl";
 
-// 3. Create the custom hook
+/**
+ * A custom hook that wraps the official `useTranslations` hook from `next-intl`.
+ * This allows us to use it without a namespace, matching the behavior of our previous custom hook.
+ */
 export const useTranslation = () => {
-  const dictionary = useContext(TranslationsContext);
+  // 1. Call the official hook from `next-intl`.
+  // By calling it WITHOUT an argument, we tell it that the `t` function
+  // will expect the full path to a key (e.g., 'Index.title').
+  const t = useTranslations();
 
-  // Throw an error if the hook is used outside of the provider
-  if (dictionary === null) {
-    throw new Error(
-      "useTranslation must be used within a TranslationsProvider"
-    );
-  }
-
-  // This is the translation function that the hook will return
-  const t = (key: string): string => {
-    // Split the key by dots (e.g., "Index.title")
-    const keys = key.split(".");
-
-    // Use reduce to navigate through the nested dictionary object
-    const result = keys.reduce((acc, currentKey) => {
-      // If accumulator is valid and has the current key, go deeper
-      if (acc && typeof acc === "object" && currentKey in acc) {
-        return acc[currentKey];
-      }
-      // Otherwise, the path is broken
-      return undefined;
-    }, dictionary);
-
-    // If the result is a string, return it. Otherwise, return the key as a fallback.
-    return typeof result === "string" ? result : key;
-  };
-
+  // 2. Return the `t` function in the same shape as your old hook ({ t }).
+  // This means you don't have to change any of the components that use this hook!
   return { t };
 };

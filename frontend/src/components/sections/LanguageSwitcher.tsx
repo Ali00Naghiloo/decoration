@@ -1,33 +1,56 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+import { useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { Button } from "../ui/button";
 import { Globe } from "lucide-react";
-import i18nConfig from "@/src/i18nConfig";
-import { useCurrentLocale } from "next-i18n-router/client";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { VscLoading } from "react-icons/vsc";
 
-export default function LanguageSwitcher() {
+export default function LocaleSwitcher() {
+  const t = useTranslations("LocaleSwitcher");
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
-  const currentLocale = useCurrentLocale(i18nConfig);
+  const params = useParams();
+  const locale = useLocale();
 
-  // Simple toggle logic
-  const nextLocale = currentLocale === "en" ? "fa" : "en";
+  function onSelectChange(event: string) {
+    const nextLocale = event as string;
+    startTransition(() => {
+      router.replace(
+        // @ts-expect-error -- TypeScript will validate that only known `params`
+        // are used in combination with a given `pathname`. Since the two will
+        // always match for the current route, we can skip runtime checks.
+        { pathname, params },
+        { locale: nextLocale }
+      );
+    });
+  }
 
-  // This logic is needed to swap the locale in the path
-  const redirectedPathName = (locale: string) => {
-    if (!pathname) return "/";
-    const segments = pathname.split("/");
-    segments[1] = locale;
-    return segments.join("/");
-  };
+  if (isPending) return <VscLoading className="animate-spin" />;
 
   return (
-    <Link
-      href={redirectedPathName(nextLocale)}
-      className="flex items-center gap-2 font-semibold"
-    >
-      <Globe className="h-5 w-5" />
-      <span>{nextLocale.toUpperCase()}</span>
-    </Link>
+    <>
+      {locale === "fa" ? (
+        <Button
+          onClick={() => onSelectChange("en")}
+          variant={"ghost"}
+          className=""
+        >
+          <Globe />
+          En
+        </Button>
+      ) : (
+        <Button
+          onClick={() => onSelectChange("fa")}
+          variant={"ghost"}
+          className=""
+        >
+          <Globe />
+          Fa
+        </Button>
+      )}
+    </>
   );
 }

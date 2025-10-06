@@ -26,9 +26,13 @@ app
       return handle(req, res, parsedUrl);
     });
 
-    server.listen(port, (err?: any) => {
-      if (err) throw err;
+    server.listen(port, hostname, () => {
       console.log(`> Ready on http://${hostname}:${port}`);
+    });
+
+    server.on("error", (err) => {
+      console.error("Express server error:", err);
+      process.exit(1);
     });
   })
   .catch((err) => {

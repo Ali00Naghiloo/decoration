@@ -1,36 +1,27 @@
-import type { Metadata } from "next";
-import { getDictionary } from "@/src/lib/translations";
-import { TranslationsProvider } from "@/src/providers/TranslationProvider";
-import { satoshiFont, yekanFont } from "@/app/fonts"; // Make sure fonts are imported
+import { NextIntlClientProvider, useMessages } from "next-intl";
+// REMOVE this import: import {unstable_setRequestLocale} from 'next-intl/server';
 
-export const metadata: Metadata = {
-  title: "Decoration Portfolio",
-  description: "Welcome to the portfolio",
-};
+// This function is now the key. It tells next-intl which locales to build.
+export function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "fa" }];
+}
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
   params: { locale },
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  const dictionary = await getDictionary(locale);
+  // REMOVE this function call: unstable_setRequestLocale(locale);
+  const messages = useMessages();
 
   return (
-    <html
-      lang={locale}
-      dir={locale === "fa" ? "rtl" : "ltr"}
-      // Add the font variables here
-      className={`${satoshiFont.variable} ${yekanFont.variable}`}
-      // This is the fix. Add this prop.
-      suppressHydrationWarning={true}
-    >
-      {/* And add the antialiased class to the body */}
-      <body className="antialiased">
-        <TranslationsProvider dictionary={dictionary}>
+    <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
-        </TranslationsProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
