@@ -5,7 +5,8 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { ArrowDown } from "lucide-react";
-import { useTranslation } from "@/src/hooks/TranslationsProvider";
+import { useTranslation } from "@/src/hooks/useTranslation";
+import heroImage from "/images/hero-section-image.png";
 
 export default function HeroSection() {
   const { t } = useTranslation();
@@ -102,7 +103,7 @@ export default function HeroSection() {
       {/* image */}
       <div className="w-full xl:w-3/5 flex items-center justify-center">
         <Image
-          src="/images/hero-section-image.png"
+          src={"/images/hero-section-image.png"}
           alt="Hero Image"
           width={1000}
           height={500}

@@ -1,44 +1,29 @@
 {
-  "Header": {
-    "learn": "Learn",
-    "about-me": "About Me",
-    "portfolio": "Portfolio",
-    "blog": "Blog",
-    "login": "Login",
-    "logoAlt": "Logo",
-    "contact": "Book a Call"
-  },
-  "HeroSection": {
-    "title": "Artistic & Unique Interior Design",
-    "description": "From interior styling to artistic installations for homes, stores, and public spaces",
-    "ctaButton": "View Portfolio",
-    "read-story": "Read the Story",
-    "customer-stories": "Customer Stories"
-  },
-  "Samples": {
-    "customer-stories": "Customer Stories",
-    "all-customer": "All Customer",
-    "stories": "Stories",
-    "read-more": "Read More"
-  },
-  "Footer": {
-    "home": "Home",
-    "impact": "Impact",
-    "platform": "Platform",
-    "pricing": "Pricing",
-    "manifesto": "Manifesto",
-    "blog": "Blog",
-    "contact-us": "Contact Us",
-    "footer-text": "This website is created to showcase personal projects, experiences, and share educational content. Here you can explore completed works and use the tutorials to learn and grow.",
-    "logoAlt": "Logo",
-    "contact": "Book a Call",
-    "login": "Login",
-    "copyright": "© 2025 COMPANY. All Rights Reserved",
-    "privacy-policy": "Privacy Policy",
-    "terms-of-service": "Terms of Service"
-  },
-  "LocaleSwitcher": {
-    "label": "Change language",
-    "locale": "{locale, select, fa {fa فارسی} en {🇺🇸 English} other {Unknown}}"
-  }
+  "learn": "Learn",
+  "about-me": "About Me",
+  "portfolio": "Portfolio",
+  "blog": "Blog",
+  "login": "Login",
+  "logoAlt": "Logo",
+  "contact": "Book a Call",
+  "title": "Artistic & Unique Interior Design",
+  "description": "From interior styling to artistic installations for homes, stores, and public spaces",
+  "ctaButton": "View Portfolio",
+  "read-story": "Read the Story",
+  "customer-stories": "Customer Stories",
+  "all-customer": "All Customer",
+  "stories": "Stories",
+  "read-more": "Read More",
+  "home": "Home",
+  "impact": "Impact",
+  "platform": "Platform",
+  "pricing": "Pricing",
+  "manifesto": "Manifesto",
+  "contact-us": "Contact Us",
+  "footer-text": "This website is created to showcase personal projects, experiences, and share educational content. Here you can explore completed works and use the tutorials to learn and grow.",
+  "copyright": "© 2025 COMPANY. All Rights Reserved",
+  "privacy-policy": "Privacy Policy",
+  "terms-of-service": "Terms of Service",
+  "label": "Change language",
+  "locale": "{locale, select, fa {fa فارسی} en {🇺🇸 English} other {Unknown}}"
 }

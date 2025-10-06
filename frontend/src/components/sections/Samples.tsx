@@ -1,4 +1,6 @@
-import { useTranslation } from "@/src/hooks/TranslationsProvider";
+"use client";
+
+import { useTranslation } from "@/src/hooks/useTranslation";
 import { Badge } from "../ui/badge";
 import SampleCard from "./SampleCard";
 import { SampleTypes } from "@/src/types/sample.types";

@@ -1,10 +1,10 @@
-import { useTranslation } from "@/src/hooks/TranslationsProvider";
+import { useTranslation } from "@/src/hooks/useTranslation";
 import { SampleTypes } from "@/src/types/sample.types";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function SampleCard({ title, category, id }: SampleTypes) {
-  const t = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <>

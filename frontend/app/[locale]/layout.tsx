@@ -1,6 +1,7 @@
-import { TranslationsProvider } from "@/src/hooks/TranslationsProvider";
-import { getDictionary } from "@/src/lib/translations";
 import type { Metadata } from "next";
+import { getDictionary } from "@/src/lib/translations";
+import { TranslationsProvider } from "@/src/providers/TranslationProvider";
+import { satoshiFont, yekanFont } from "@/app/fonts"; // Make sure fonts are imported
 
 export const metadata: Metadata = {
   title: "Decoration Portfolio",
@@ -17,8 +18,16 @@ export default async function RootLayout({
   const dictionary = await getDictionary(locale);
 
   return (
-    <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
-      <body>
+    <html
+      lang={locale}
+      dir={locale === "fa" ? "rtl" : "ltr"}
+      // Add the font variables here
+      className={`${satoshiFont.variable} ${yekanFont.variable}`}
+      // This is the fix. Add this prop.
+      suppressHydrationWarning={true}
+    >
+      {/* And add the antialiased class to the body */}
+      <body className="antialiased">
         <TranslationsProvider dictionary={dictionary}>
           {children}
         </TranslationsProvider>

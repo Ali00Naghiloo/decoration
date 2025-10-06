@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { LogIn, MoveUp, Phone } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
-import { useTranslation } from "@/src/hooks/TranslationsProvider";
+import { useTranslation } from "@/src/hooks/useTranslation";
 
 export default function Footer() {
   const { t } = useTranslation();

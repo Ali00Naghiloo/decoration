@@ -5,10 +5,10 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { Globe, LogIn, Menu, Phone } from "lucide-react";
 import LanguageSwitcher from "../sections/LanguageSwitcher";
-import { useTranslation } from "@/src/hooks/TranslationsProvider";
+import { useTranslation } from "@/src/hooks/useTranslation";
 
 export default function Header() {
-  const t = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <>
