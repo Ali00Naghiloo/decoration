@@ -11,20 +11,22 @@ export default function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const params = useParams();
   const locale = useLocale();
 
   function onSelectChange(event: string) {
     const nextLocale = event as string;
     startTransition(() => {
-      router.replace(
-        // @ts-expect-error -- TypeScript will validate that only known `params`
-        // are used in combination with a given `pathname`. Since the two will
-        // always match for the current route, we can skip runtime checks.
-        { pathname, params },
-        { locale: nextLocale }
-      );
+      if (typeof pathname !== "string") return;
+      const segments = pathname.split("/");
+      if (segments[1] === "fa" || segments[1] === "en") {
+        segments[1] = nextLocale;
+      } else {
+        segments.splice(1, 0, nextLocale);
+      }
+      const nextPath = segments.join("/") || "/";
+      router.replace(nextPath);
     });
   }
 

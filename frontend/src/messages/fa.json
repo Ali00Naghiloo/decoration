@@ -25,5 +25,8 @@
   "privacy-policy": "سیاست حفظ حریم خصوصی",
   "terms-of-service": "شرایط خدمات",
   "label": "تغییر زبان",
-  "locale": "{locale, select, fa {🇩🇪 Farsi} en {🇺🇸 English} other {Unknown}}"
+  "locale": "{locale, select, fa {🇩🇪 Farsi} en {🇺🇸 English} other {Unknown}}",
+  "LocaleSwitcher": {
+    "label": "تغییر زبان"
+  }
 }

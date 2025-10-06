@@ -1,4 +1,6 @@
 import { NextIntlClientProvider, useMessages } from "next-intl";
+import { satoshiFont, yekanFont } from "../fonts";
+import { setRequestLocale } from "next-intl/server";
 // REMOVE this import: import {unstable_setRequestLocale} from 'next-intl/server';
 
 // This function is now the key. It tells next-intl which locales to build.
@@ -13,16 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  // REMOVE this function call: unstable_setRequestLocale(locale);
+  setRequestLocale(locale);
   const messages = useMessages();
 
   return (
-    <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
-      <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <div
+      dir={locale === "fa" ? "rtl" : "ltr"}
+      className={`${satoshiFont.variable} ${yekanFont.variable} w-full h-full`}
+    >
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        {children}
+      </NextIntlClientProvider>
+    </div>
   );
 }

@@ -25,5 +25,8 @@
   "privacy-policy": "Privacy Policy",
   "terms-of-service": "Terms of Service",
   "label": "Change language",
-  "locale": "{locale, select, fa {fa فارسی} en {🇺🇸 English} other {Unknown}}"
+  "locale": "{locale, select, fa {fa فارسی} en {🇺🇸 English} other {Unknown}}",
+  "LocaleSwitcher": {
+    "label": "Change language"
+  }
 }

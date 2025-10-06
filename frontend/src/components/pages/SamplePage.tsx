@@ -1,7 +1,7 @@
 import React from "react";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import Sample from "../components/sections/Sample";
+import Header from "@/src/components/layout/Header";
+import Footer from "@/src/components/layout/Footer";
+import Sample from "@/src/components/sections/Sample";
 
 export default function SamplePage({ sampleId }: { sampleId: string }) {
   return (

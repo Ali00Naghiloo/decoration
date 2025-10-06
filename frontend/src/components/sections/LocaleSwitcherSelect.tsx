@@ -23,12 +23,16 @@ export default function LocaleSwitcherSelect({
   function onSelectChange(event: ChangeEvent<HTMLSelectElement>) {
     const nextLocale = event.target.value;
     startTransition(() => {
-      router.replace(
-        // @ts-expect-error -- TypeScript will validate that only known `params`
-        // are used in combination with a given `pathname`. Since the two will
-        // always match for the current route, we can skip runtime checks.
-        { pathname, params: { ...params, locale: nextLocale } }
-      );
+      // Replace the locale in the pathname directly for Next.js App Router
+      if (!pathname) return;
+      const segments = pathname.split("/");
+      if (segments[1] === "fa" || segments[1] === "en") {
+        segments[1] = nextLocale;
+      } else {
+        segments.splice(1, 0, nextLocale);
+      }
+      const nextPath = segments.join("/") || "/";
+      router.replace(nextPath);
     });
   }
 

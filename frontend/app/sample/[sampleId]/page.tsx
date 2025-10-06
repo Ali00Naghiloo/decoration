@@ -1,4 +1,4 @@
-import SamplePage from "@/src/pages/SamplePage";
+import SamplePage from "@/src/components/pages/SamplePage";
 import React from "react";
 
 export default async function page({
