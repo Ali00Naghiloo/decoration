@@ -24,10 +24,11 @@ export default function RootLayout({
   const messages = useMessages();
 
   return (
-    <html>
+    <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
       <body
-        dir={locale === "fa" ? "rtl" : "ltr"}
-        className={`${satoshiFont.variable} ${yekanFont.variable} w-full h-full`}
+        className={`${
+          locale === "fa" ? yekanFont.variable : satoshiFont.variable
+        }`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
