@@ -2,7 +2,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es2020",
     "outDir": ".", // Output the compiled file to the root directory
     "noEmit": false // This must be false to create the .js file
   },

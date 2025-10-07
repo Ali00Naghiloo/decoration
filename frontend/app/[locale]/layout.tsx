@@ -1,7 +1,6 @@
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { satoshiFont, yekanFont } from "../fonts";
 import { setRequestLocale } from "next-intl/server";
-// REMOVE this import: import {unstable_setRequestLocale} from 'next-intl/server';
 
 // This function is now the key. It tells next-intl which locales to build.
 export function generateStaticParams() {

@@ -1,39 +1,43 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-// server.ts
-const express_1 = __importDefault(require("express"));
-const next_1 = __importDefault(require("next"));
-const url_1 = require("url");
+// server.js
+import express from "express";
+import next from "next";
+import { parse } from "url";
+
 // Determine if we are in development or production mode
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost"; // Standard for cPanel setups
+
 // Get the port from the environment variable provided by cPanel/Phusion Passenger
 // Fallback to 3000 for local development
 const port = parseInt(process.env.PORT || "3105", 10);
+
 // Create the Next.js app instance
-const app = (0, next_1.default)({ dev });
+const app = next({ dev });
 const handle = app.getRequestHandler();
+
 app
-    .prepare()
-    .then(() => {
-    const server = (0, express_1.default)();
+  .prepare()
+  .then(() => {
+    const server = express();
+
     // The custom server handles all requests and passes them to Next.js
-    server.all("*", (req, res) => {
-        const parsedUrl = (0, url_1.parse)(req.url, true);
-        return handle(req, res, parsedUrl);
+    // Using middleware approach instead of route patterns
+    server.use((req, res) => {
+      const parsedUrl = parse(req.url, true);
+      return handle(req, res, parsedUrl);
     });
-    server.listen(port, hostname, () => {
-        console.log(`> Ready on http://${hostname}:${port}`);
+
+    server.listen(port, hostname, (err) => {
+      if (err) throw err;
+      console.log(`> Ready on http://${hostname}:${port}`);
     });
+
     server.on("error", (err) => {
-        console.error("Express server error:", err);
-        process.exit(1);
+      console.error("Express server error:", err);
+      process.exit(1);
     });
-})
-    .catch((err) => {
+  })
+  .catch((err) => {
     console.error("Error starting Next.js server", err);
     process.exit(1);
-});
+  });

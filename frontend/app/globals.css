@@ -41,7 +41,7 @@
 }
 
 :root[lang="fa"] {
-  --font-primary: var(--font-yekan-bakh);
+  --font-primary: var(--font-yekan);
 }
 
 @theme inline {
@@ -93,7 +93,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-primary);
+  font-family: var(--font-primary), "Yekan Bakh", "Tahoma", "Arial", sans-serif;
   box-sizing: border-box;
   font-size: 16px;
   @apply font-sans;
