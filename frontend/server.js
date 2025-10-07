@@ -1,43 +1,34 @@
-// server.js
+// server.ts
 import express from "express";
 import next from "next";
 import { parse } from "url";
-
 // Determine if we are in development or production mode
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost"; // Standard for cPanel setups
-
 // Get the port from the environment variable provided by cPanel/Phusion Passenger
 // Fallback to 3000 for local development
 const port = parseInt(process.env.PORT || "3105", 10);
-
 // Create the Next.js app instance
 const app = next({ dev });
 const handle = app.getRequestHandler();
-
 app
-  .prepare()
-  .then(() => {
+    .prepare()
+    .then(() => {
     const server = express();
-
     // The custom server handles all requests and passes them to Next.js
-    // Using middleware approach instead of route patterns
-    server.use((req, res) => {
-      const parsedUrl = parse(req.url, true);
-      return handle(req, res, parsedUrl);
+    server.all("*", (req, res) => {
+        const parsedUrl = parse(req.url, true);
+        return handle(req, res, parsedUrl);
     });
-
-    server.listen(port, hostname, (err) => {
-      if (err) throw err;
-      console.log(`> Ready on http://${hostname}:${port}`);
+    server.listen(port, hostname, () => {
+        console.log(`> Ready on http://${hostname}:${port}`);
     });
-
     server.on("error", (err) => {
-      console.error("Express server error:", err);
-      process.exit(1);
+        console.error("Express server error:", err);
+        process.exit(1);
     });
-  })
-  .catch((err) => {
+})
+    .catch((err) => {
     console.error("Error starting Next.js server", err);
     process.exit(1);
-  });
+});

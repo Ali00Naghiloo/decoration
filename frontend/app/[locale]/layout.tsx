@@ -1,8 +1,14 @@
+import "./globals.css";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import { satoshiFont, yekanFont } from "../fonts";
 import { setRequestLocale } from "next-intl/server";
+import { Metadata } from "next";
 
-// This function is now the key. It tells next-intl which locales to build.
+export const metadata: Metadata = {
+  title: "My Portfolio",
+  description: "Interior Design Portfolio",
+};
+
 export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "fa" }];
 }
@@ -18,13 +24,15 @@ export default function RootLayout({
   const messages = useMessages();
 
   return (
-    <div
-      dir={locale === "fa" ? "rtl" : "ltr"}
-      className={`${satoshiFont.variable} ${yekanFont.variable} w-full h-full`}
-    >
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        {children}
-      </NextIntlClientProvider>
-    </div>
+    <html>
+      <body
+        dir={locale === "fa" ? "rtl" : "ltr"}
+        className={`${satoshiFont.variable} ${yekanFont.variable} w-full h-full`}
+      >
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }
