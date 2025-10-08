@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && tsc --project tsconfig.server.json",
+    "build": "next build && tsc --project tsconfig.json",
     "start": "next start -p 3105",
     "lint": "next lint"
   },

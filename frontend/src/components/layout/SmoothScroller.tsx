@@ -11,7 +11,7 @@ export default function SmoothScroller({ children }: { children: ReactNode }) {
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.08,
-      duration: 1.8,
+      duration: 10000,
       easing: easeInOutCubic,
     });
 

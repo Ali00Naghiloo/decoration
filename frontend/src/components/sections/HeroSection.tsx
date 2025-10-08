@@ -84,7 +84,7 @@ export default function HeroSection() {
               onClick={() => scrollToSection("samples", 80, 1000)}
               color="blue"
               variant={"destructive"}
-              className="h-fit text-[1.1em] !p-7 flex gap-3 rounded-[8px] !py-2 !pl-5 !pr-2"
+              className="h-fit text-[1.1em] !p-7 flex gap-3 rounded-[8px] !py-2 !pl-3 !pr-2"
             >
               {t("ctaButton")}
               <div

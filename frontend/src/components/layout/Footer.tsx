@@ -124,7 +124,7 @@ export default function Footer() {
 
         <div className="relative flex justify-between flex-wrap py-4">
           <span>{t("copyright")}</span>
-          <span className="absolute left-1/2 top-1/2 translate-x-[-100%] translate-y-[-50%]">
+          <span className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]">
             {t("privacy-policy")}
           </span>
           <span>{t("terms-of-service")}</span>

@@ -12,7 +12,7 @@ export default function Header() {
 
   return (
     <>
-      <div className="hidden relative w-full xl:flex justify-between p-6 h-[10vh]">
+      <div className="hidden w-full xl:flex justify-between p-6 h-[10vh] bg-white sticky top-0">
         <Image
           src="/logo.svg"
           alt={t("logoAlt")}
