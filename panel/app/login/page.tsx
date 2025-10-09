@@ -1,3 +1,3 @@
-export default function page() {
-  return <div>page</div>;
-}
+import LoginPage from "@/src/pages/LoginPage";
+
+export default LoginPage;

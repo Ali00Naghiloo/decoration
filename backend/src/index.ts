@@ -8,7 +8,7 @@ import path from "path";
 
 // --- Import your route handlers ---
 import authRouter from "./routes/auth.routes";
-// import portfolioRouter from './routes/portfolio.routes'; // We will add this next
+import portfolioRouter from "./routes/portfolio.routes";
 
 // --- Load Environment Variables ---
 // This should be at the very top
@@ -32,7 +32,7 @@ app.use(express.json({ limit: "10kb" }));
 // --- API Routes ---
 // Mount the routers on their respective paths
 app.use("/api/auth", authRouter);
-// app.use('/api/portfolio', portfolioRouter); // We will uncomment this in the next step
+app.use("/api/samples", portfolioRouter);
 
 // --- Handle Unhandled Routes ---
 // This middleware will run for any route that hasn't been matched by the routers above

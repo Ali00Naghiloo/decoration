@@ -50,10 +50,22 @@ export const createPortfolioItem = async (
 };
 
 // --- READ (getAllPortfolioItems and getPortfolioItemBySlug remain the same) ---
-export {
-  getAllPortfolioItems,
-  getPortfolioItemBySlug,
-} from "./portfolio.controller"; // Assuming they are in the same file and correct.
+/**
+ * GET /api/samples
+ * Returns all portfolio items
+ */
+export const getAllPortfolioItems = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const items = await PortfolioItem.find();
+    res.status(200).json({ status: "success", data: { items } });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // --- UPDATE ---
 export const updatePortfolioItem = async (

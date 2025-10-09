@@ -24,4 +24,24 @@ export const getSamples = async (): Promise<Sample[]> => {
 export const deleteSample = async (id: string): Promise<void> => {
   await api.delete(`/samples/${id}`);
 };
+// Function to create a new sample
+export const createSample = async (data: {
+  title: string;
+  description: string;
+}) => {
+  await api.post("/samples", data);
+};
+// Function to update a sample by its ID
+export const updateSample = async (
+  id: string,
+  data: { title: string; description: string }
+) => {
+  await api.put(`/samples/${id}`, data);
+};
+// Function to get a single sample by its ID
+export const getSampleById = async (id: string): Promise<Sample> => {
+  const response = await api.get(`/samples/${id}`);
+  return response.data.data.item;
+};
+
 export default api;
