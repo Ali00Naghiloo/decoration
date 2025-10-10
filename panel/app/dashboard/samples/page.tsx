@@ -61,14 +61,14 @@ export default function SamplesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Manage Samples</h1>
+        <h1 className="text-3xl font-bold">مدیریت نمونه‌کارها</h1>
         <Button asChild>
           <Link
             href="/dashboard/samples/new"
             className="flex items-center gap-2"
           >
             <Plus className="h-5 w-5" />
-            Create New Sample
+            ایجاد نمونه‌کار جدید
           </Link>
         </Button>
       </div>
@@ -77,9 +77,9 @@ export default function SamplesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>عنوان</TableHead>
+              <TableHead>تاریخ ایجاد</TableHead>
+              <TableHead className="text-right">عملیات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -91,7 +91,7 @@ export default function SamplesPage() {
                     {new Date(sample.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="secondary" size="sm" asChild>
                       <Link href={`/dashboard/samples/${sample._id}`}>
                         <Edit className="h-4 w-4" />
                       </Link>

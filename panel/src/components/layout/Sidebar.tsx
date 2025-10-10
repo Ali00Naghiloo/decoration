@@ -6,8 +6,8 @@ import { Home, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/samples", label: "Samples", icon: ImageIcon },
+  { href: "/dashboard", label: "داشبورد", icon: Home },
+  { href: "/dashboard/samples", label: "نمونه‌کارها", icon: ImageIcon },
 ];
 
 export default function Sidebar() {
@@ -15,7 +15,7 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 flex-shrink-0 bg-gray-800 text-white p-4 flex flex-col">
-      <h1 className="text-2xl font-bold mb-8">Admin Panel</h1>
+      <h1 className="text-2xl font-bold mb-8">پنل مدیریت</h1>
       <nav className="flex-grow">
         <ul>
           {navLinks.map((link) => (

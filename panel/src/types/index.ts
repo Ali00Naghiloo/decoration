@@ -4,8 +4,8 @@ export interface Sample {
   title: string;
   slug: string;
   description: string; // This will be a string of HTML
-  mediaUrl?: string;
-  mediaType?: "image" | "video";
+  images?: string[]; // Multiple images
+  video?: string | null; // Video file
   createdAt: string; // Mongoose timestamps are strings in JSON
   updatedAt: string;
 }

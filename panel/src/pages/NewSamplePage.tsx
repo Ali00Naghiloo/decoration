@@ -8,7 +8,8 @@ import toast from "react-hot-toast";
 export default function NewSamplePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [video, setVideo] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,8 +23,11 @@ export default function NewSamplePage() {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
-      if (file) {
-        formData.append("file", file);
+      files.forEach((file, idx) => {
+        formData.append("images", file);
+      });
+      if (video) {
+        formData.append("video", video);
       }
       const res = await axios.post(
         process.env.NEXT_PUBLIC_API_URL
@@ -37,7 +41,10 @@ export default function NewSamplePage() {
       toast.success("نمونه‌کار جدید با موفقیت ایجاد شد!");
       setTitle("");
       setDescription("");
-      setFile(null);
+      setFiles([]);
+      setVideo(null);
+      // ریدایرکت به لیست نمونه‌کارها
+      window.location.href = "/dashboard/samples";
     } catch (err: any) {
       toast.error(
         err?.response?.data?.message ||
@@ -79,12 +86,25 @@ export default function NewSamplePage() {
         </div>
         <div>
           <label className="block mb-1 font-semibold">
-            آپلود فایل (اختیاری)
+            آپلود تصاویر (چندتایی)
           </label>
           <Input
             type="file"
-            accept="image/*,video/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            accept="image/*"
+            multiple
+            onChange={(e) =>
+              setFiles(e.target.files ? Array.from(e.target.files) : [])
+            }
+          />
+        </div>
+        <div>
+          <label className="block mb-1 font-semibold">
+            آپلود ویدیو (یک عدد)
+          </label>
+          <Input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setVideo(e.target.files?.[0] || null)}
           />
         </div>
         <Button type="submit" className="w-full" disabled={loading}>

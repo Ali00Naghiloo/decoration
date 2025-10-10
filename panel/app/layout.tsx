@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { yekanFont } from "./fonts";
 import "./globals.css";
 import QueryProvider from "@/src/providers/QueryProvider";
 
@@ -26,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${yekanFont.variable} antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
       </body>

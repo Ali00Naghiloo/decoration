@@ -16,6 +16,8 @@ export default function EditSamplePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSample = async () => {
@@ -24,6 +26,8 @@ export default function EditSamplePage() {
         const data = await getSampleById(id);
         setTitle(data.title);
         setDescription(data.description);
+        setImages(data.images || []);
+        setVideoUrl(data.video || null);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "خطا در دریافت اطلاعات نمونه");
@@ -64,10 +68,40 @@ export default function EditSamplePage() {
           onChange={(e) => setDescription(e.target.value)}
           required
         />
-        <Button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="bg-primary text-white hover:bg-primary/90"
+        >
           {loading ? "در حال ویرایش..." : "ویرایش"}
         </Button>
       </form>
+      {(images.length > 0 || videoUrl) && (
+        <div className="mt-6">
+          <label className="block mb-1 font-semibold">
+            فایل‌های آپلود شده:
+          </label>
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`نمونه کار ${idx + 1}`}
+                  className="w-32 h-32 object-cover rounded"
+                />
+              ))}
+            </div>
+          )}
+          {videoUrl && (
+            <video
+              src={videoUrl}
+              controls
+              className="w-full max-h-64 rounded"
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

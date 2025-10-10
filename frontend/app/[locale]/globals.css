@@ -6,7 +6,7 @@
 :root {
   --font-primary: var(--font-satoshi);
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(0.25 0 0);
   --radius: 0.625rem;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -42,6 +42,7 @@
 
 :root[lang="fa"] {
   --font-primary: var(--font-yekan);
+  font-weight: 500;
 }
 
 @theme inline {
