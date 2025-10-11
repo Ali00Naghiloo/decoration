@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import RichTextEditor from "@/src/components/forms/RichTextEditor";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import axios from "axios";
@@ -45,18 +46,26 @@ export default function NewSamplePage() {
       setVideo(null);
       // ریدایرکت به لیست نمونه‌کارها
       window.location.href = "/dashboard/samples";
-    } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message ||
-          "خطا در ایجاد نمونه‌کار. لطفاً دوباره تلاش کنید."
-      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          toast.error(
+            err.response.data?.message ||
+              "خطا در ایجاد نمونه‌کار. لطفاً دوباره تلاش کنید."
+          );
+        } else {
+          toast.error("خطای ناشناخته رخ داد.");
+        }
+      } else {
+        toast.error("خطای ناشناخته رخ داد.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow">
+    <div className="max-w-2xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-center">
         ایجاد نمونه‌کار جدید
       </h1>
@@ -73,16 +82,12 @@ export default function NewSamplePage() {
         </div>
         <div>
           <label className="block mb-1 font-semibold">توضیحات</label>
-          <textarea
-            className="w-full rounded-md border px-3 py-2 text-base"
-            value={description}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setDescription(e.target.value)
-            }
-            placeholder="توضیح مختصر درباره نمونه‌کار"
-            required
-            rows={4}
-          />
+          {typeof window !== "undefined" && (
+            <RichTextEditor
+              value={description}
+              onChange={(content: string) => setDescription(content)}
+            />
+          )}
         </div>
         <div>
           <label className="block mb-1 font-semibold">
@@ -106,6 +111,55 @@ export default function NewSamplePage() {
             accept="video/*"
             onChange={(e) => setVideo(e.target.files?.[0] || null)}
           />
+        </div>
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">پیش‌نمایش</h2>
+          <div className="space-y-2">
+            {files.map((file, index) => (
+              <div
+                key={index}
+                className="relative group flex items-center space-x-2"
+                draggable
+                onDragStart={(e) =>
+                  e.dataTransfer.setData("text/plain", index.toString())
+                }
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  const draggedIndex = parseInt(
+                    e.dataTransfer.getData("text/plain"),
+                    10
+                  );
+                  const updatedFiles = [...files];
+                  const [draggedFile] = updatedFiles.splice(draggedIndex, 1);
+                  updatedFiles.splice(index, 0, draggedFile);
+                  setFiles(updatedFiles);
+                }}
+              >
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`Preview ${index}`}
+                  className="w-full h-auto rounded-md shadow"
+                />
+                <button
+                  type="button"
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-sm opacity-0 group-hover:opacity-100 transition"
+                  onClick={() => {
+                    const updatedFiles = files.filter((_, i) => i !== index);
+                    setFiles(updatedFiles);
+                  }}
+                >
+                  حذف
+                </button>
+              </div>
+            ))}
+            {video && (
+              <video
+                controls
+                src={URL.createObjectURL(video)}
+                className="w-full h-auto rounded-md shadow"
+              />
+            )}
+          </div>
         </div>
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "در حال ارسال..." : "ایجاد نمونه‌کار"}
