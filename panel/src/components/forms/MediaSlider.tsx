@@ -29,13 +29,13 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
             <video
               src={item.url}
               controls
-              className="w-full max-h-96 rounded"
+              className="w-full max-w-[400px] max-h-[400px] mx-auto rounded"
             />
           ) : (
             <img
               src={item.url}
               alt={`media-${idx}`}
-              className="w-full max-h-96 object-contain rounded"
+              className="w-full max-w-[400px] max-h-[400px] mx-auto object-contain rounded"
             />
           )}
         </SwiperSlide>

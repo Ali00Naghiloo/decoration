@@ -15,10 +15,9 @@ api.interceptors.request.use((config) => {
 });
 // --- NEW API FUNCTIONS ---
 // Function to fetch all samples
-export const getSamples = async (): Promise<Sample[]> => {
+export const getSamples = async (): Promise<{ items: Sample[] }> => {
   const response = await api.get("/samples");
-  // The actual data is in response.data.data.items based on your backend controller
-  return response.data.data.items;
+  return response.data.data;
 };
 // Function to delete a sample by its ID
 export const deleteSample = async (id: string): Promise<void> => {
@@ -41,7 +40,7 @@ export const updateSample = async (
 // Function to get a single sample by its ID
 export const getSampleById = async (id: string): Promise<Sample> => {
   const response = await api.get(`/samples/${id}`);
-  return response.data.data.item;
+  return response.data.data;
 };
 
 export default api;

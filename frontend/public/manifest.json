@@ -1,0 +1,16 @@
+{
+  "name": "هنر معماری و فشن",
+  "short_name": "معماری و فشن",
+  "description": "خدمات جامع طراحی و اجرای معماری ساختمان‌های لوکس، نقاشی، پتینه، دکوراسیون داخلی و طراحی لباس اختصاصی برای بانوان.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#22223b",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    }
+  ]
+}

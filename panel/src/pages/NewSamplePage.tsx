@@ -12,6 +12,8 @@ export default function NewSamplePage() {
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const imageInputRef = React.useRef<HTMLInputElement>(null);
+  const videoInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +67,7 @@ export default function NewSamplePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
+    <div className="w-full mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold mb-6 text-center">
         ایجاد نمونه‌کار جدید
       </h1>
@@ -93,73 +95,104 @@ export default function NewSamplePage() {
           <label className="block mb-1 font-semibold">
             آپلود تصاویر (چندتایی)
           </label>
-          <Input
+          <input
+            ref={imageInputRef}
             type="file"
             accept="image/*"
             multiple
+            className="hidden"
             onChange={(e) =>
               setFiles(e.target.files ? Array.from(e.target.files) : [])
             }
           />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() =>
+              imageInputRef.current && imageInputRef.current.click()
+            }
+          >
+            انتخاب تصاویر
+          </Button>
+        </div>
+        {/* پیش‌نمایش تصاویر انتخاب‌شده */}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {files.map((file, idx) => (
+            <div key={idx} className="relative group">
+              <img
+                src={URL.createObjectURL(file)}
+                alt={`preview-${idx}`}
+                className="w-24 h-24 object-cover rounded border"
+              />
+              {/* دکمه حذف */}
+              <button
+                type="button"
+                className="absolute top-1 left-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100"
+                onClick={() => {
+                  setFiles((prev) => prev.filter((_, i) => i !== idx));
+                }}
+                title="حذف عکس"
+              >
+                ×
+              </button>
+              {/* دکمه تعویض */}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id={`replace-image-${idx}`}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setFiles((prev) =>
+                      prev.map((f, i) => (i === idx ? e.target.files![0] : f))
+                    );
+                  }
+                }}
+              />
+              <label
+                htmlFor={`replace-image-${idx}`}
+                className="absolute bottom-1 left-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100 cursor-pointer"
+                title="تعویض عکس"
+              >
+                ↻
+              </label>
+            </div>
+          ))}
         </div>
         <div>
           <label className="block mb-1 font-semibold">
             آپلود ویدیو (یک عدد)
           </label>
-          <Input
+          <input
+            ref={videoInputRef}
             type="file"
             accept="video/*"
+            className="hidden"
             onChange={(e) => setVideo(e.target.files?.[0] || null)}
           />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() =>
+              videoInputRef.current && videoInputRef.current.click()
+            }
+          >
+            انتخاب ویدیو
+          </Button>
         </div>
+        {/* پیش‌نمایش عکس‌ها کنار دکمه آپلود نمایش داده می‌شود */}
         <div className="mt-4">
-          <h2 className="text-lg font-semibold mb-2">پیش‌نمایش</h2>
-          <div className="space-y-2">
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="relative group flex items-center space-x-2"
-                draggable
-                onDragStart={(e) =>
-                  e.dataTransfer.setData("text/plain", index.toString())
-                }
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  const draggedIndex = parseInt(
-                    e.dataTransfer.getData("text/plain"),
-                    10
-                  );
-                  const updatedFiles = [...files];
-                  const [draggedFile] = updatedFiles.splice(draggedIndex, 1);
-                  updatedFiles.splice(index, 0, draggedFile);
-                  setFiles(updatedFiles);
-                }}
-              >
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt={`Preview ${index}`}
-                  className="w-full h-auto rounded-md shadow"
-                />
-                <button
-                  type="button"
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-sm opacity-0 group-hover:opacity-100 transition"
-                  onClick={() => {
-                    const updatedFiles = files.filter((_, i) => i !== index);
-                    setFiles(updatedFiles);
-                  }}
-                >
-                  حذف
-                </button>
-              </div>
-            ))}
-            {video && (
-              <video
-                controls
-                src={URL.createObjectURL(video)}
-                className="w-full h-auto rounded-md shadow"
-              />
-            )}
-          </div>
+          {video && (
+            <video
+              controls
+              src={URL.createObjectURL(video)}
+              className="w-full h-auto rounded-md shadow"
+            />
+          )}
         </div>
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "در حال ارسال..." : "ایجاد نمونه‌کار"}

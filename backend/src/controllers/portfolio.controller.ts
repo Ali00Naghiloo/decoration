@@ -16,7 +16,7 @@ const getFileUrl = (req: Request, filename: string) => {
 
 // --- CREATE ---
 export const createPortfolioItem = async (
-  req: Request,
+  req: Request & { file?: any },
   res: Response,
   next: NextFunction
 ) => {
@@ -43,13 +43,45 @@ export const createPortfolioItem = async (
       mediaType,
     });
 
-    res.status(201).json({ status: "success", data: { item: newItem } });
+    res.status(201).json({ status: "success", data: newItem });
   } catch (error) {
     next(error);
   }
 };
 
 // --- READ (getAllPortfolioItems and getPortfolioItemBySlug remain the same) ---
+/**
+ * GET /api/samples/:id
+ * Returns a single portfolio item with images and videoUrl
+ */
+export const getPortfolioItemById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const item = await PortfolioItem.findById(req.params.id);
+    if (!item) {
+      return next(new AppError("No item found with that ID.", 404));
+    }
+    // فرض بر این که فقط یک عکس یا ویدیو دارد
+    const images =
+      item.mediaType === "image" && item.mediaUrl ? [item.mediaUrl] : [];
+    const videoUrl =
+      item.mediaType === "video" && item.mediaUrl ? item.mediaUrl : null;
+    res.status(200).json({
+      status: "success",
+      data: {
+        ...item.toObject(),
+        images,
+        videoUrl,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /**
  * GET /api/samples
  * Returns all portfolio items
@@ -61,7 +93,16 @@ export const getAllPortfolioItems = async (
 ) => {
   try {
     const items = await PortfolioItem.find();
-    res.status(200).json({ status: "success", data: { items } });
+    // اضافه کردن فیلد cover به هر آیتم
+    const itemsWithCover = items.map((item: any) => ({
+      ...item.toObject(),
+      cover:
+        item.mediaType === "image" && item.mediaUrl ? item.mediaUrl : undefined,
+    }));
+    res.status(200).json({
+      status: "success",
+      data: itemsWithCover,
+    });
   } catch (error) {
     next(error);
   }
@@ -69,7 +110,7 @@ export const getAllPortfolioItems = async (
 
 // --- UPDATE ---
 export const updatePortfolioItem = async (
-  req: Request,
+  req: Request & { file?: any },
   res: Response,
   next: NextFunction
 ) => {
@@ -102,7 +143,7 @@ export const updatePortfolioItem = async (
     }
 
     const updatedItem = await item.save();
-    res.status(200).json({ status: "success", data: { item: updatedItem } });
+    res.status(200).json({ status: "success", data: updatedItem });
   } catch (error) {
     next(error);
   }

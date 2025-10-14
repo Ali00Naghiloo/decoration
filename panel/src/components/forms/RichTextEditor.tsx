@@ -1,18 +1,11 @@
-"use client";
+// "use client";
+import dynamic from "next/dynamic";
+import api from "@/src/lib/api";
+import "react-quill/dist/quill.snow.css";
+import { useCallback, useState, useRef } from "react";
 
-import { useEditor, EditorContent, Editor } from "@tiptap/react";
-import Underline from "@tiptap/extension-underline";
-import Strike from "@tiptap/extension-strike";
-import TextAlign from "@tiptap/extension-text-align";
-import ListItem from "@tiptap/extension-list-item";
-import BulletList from "@tiptap/extension-bullet-list";
-import OrderedList from "@tiptap/extension-ordered-list";
-import StarterKit from "@tiptap/starter-kit";
-import { useCallback } from "react";
-import { uploadFile } from "@/src/lib/upload";
-import { Button } from "@/src/components/ui/button";
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
-import Image from "@tiptap/extension-image";
 export default function RichTextEditor({
   value,
   onChange,
@@ -20,159 +13,155 @@ export default function RichTextEditor({
   value: string;
   onChange: (val: string) => void;
 }) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Underline,
-      Strike,
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-      ListItem,
-      BulletList,
-      OrderedList,
-    ],
-    content: value,
-    immediatelyRender: false,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-  });
+  // لودینگ برای آپلود عکس
+  const [uploading, setUploading] = useState(false);
+  const quillRef = useRef<any>(null);
 
   // Custom image upload handler
-  const handleImageUpload = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+  const imageHandler = useCallback(() => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
       if (!file) return;
 
       const formData = new FormData();
-      formData.append("file", file); // Ensure the field name matches the backend
+      formData.append("file", file);
 
-      if (editor) {
-        try {
-          const formData = new FormData();
-          formData.append("file", file);
-
-          const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to upload image");
-          }
-
-          const data = await response.json();
-          editor.chain().focus().setImage({ src: data.url }).run();
-        } catch (error) {
-          console.error("Image upload error:", error);
+      setUploading(true);
+      try {
+        const uploadUrl =
+          (api.defaults.baseURL?.replace(/\/$/, "") || "") + "/upload";
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          body: formData,
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Upload error:", response.status, errorText);
+          throw new Error(
+            "Failed to upload image: " + response.status + " " + errorText
+          );
         }
+        const data = await response.json();
+        const editor = quillRef.current?.getEditor?.();
+        if (editor) {
+          const range = editor.getSelection();
+          // استفاده از آدرس کامل عکس از data.file.url
+          editor.insertEmbed(
+            range ? range.index : 0,
+            "image",
+            data.file?.url || data.url
+          );
+        }
+      } catch (error) {
+        console.error("Image upload error:", error);
+      } finally {
+        setUploading(false);
       }
-    },
-    [editor]
-  );
+    };
+  }, []);
 
-  if (typeof window === "undefined") {
-    return null; // Prevent rendering on the server
+  const fonts = [
+    "yekan",
+    "satoshi",
+    "serif",
+    "sans-serif",
+    "monospace",
+    "tahoma",
+    "arial",
+    "roboto",
+    "times-new-roman",
+  ];
+  const sizes = [
+    "small",
+    false,
+    "large",
+    "huge",
+    "18px",
+    "24px",
+    "32px",
+    "48px",
+  ];
+  const modules = {
+    toolbar: {
+      container: [
+        [{ font: fonts }, { size: sizes }],
+        ["bold", "italic", "underline", "strike"],
+        [{ color: [] }, { background: [] }],
+        [{ script: "sub" }, { script: "super" }],
+        [{ header: 1 }, { header: 2 }, "blockquote", "code-block"],
+        [
+          { list: "ordered" },
+          { list: "bullet" },
+          { indent: "-1" },
+          { indent: "+1" },
+        ],
+        [{ align: [] }, { direction: "rtl" }],
+        ["link", "image", "video", "formula"],
+        ["clean"],
+        ["table"],
+      ],
+      handlers: {},
+    },
+    table: true,
+    clipboard: {
+      matchVisual: false,
+    },
+  };
+
+  // Custom fonts CSS for Quill
+  if (typeof window !== "undefined") {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      .ql-font-yekan { font-family: 'YekanBakhFaNum-Regular', yekan, sans-serif; }
+      .ql-font-satoshi { font-family: 'Satoshi', sans-serif; }
+      .ql-font-tahoma { font-family: Tahoma, sans-serif; }
+      .ql-font-arial { font-family: Arial, sans-serif; }
+      .ql-font-roboto { font-family: Roboto, sans-serif; }
+      .ql-font-serif { font-family: serif; }
+      .ql-font-sans-serif { font-family: sans-serif; }
+      .ql-font-monospace { font-family: monospace; }
+      .ql-font-times-new-roman { font-family: 'Times New Roman', serif; }
+    `;
+    document.head.appendChild(style);
   }
 
+  const formats = [
+    "font",
+    "size",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "color",
+    "background",
+    "script",
+    "header",
+    "blockquote",
+    "code-block",
+    "list",
+    "indent",
+    "align",
+    "direction",
+    "link",
+    "image",
+    "video",
+    "formula",
+    "table",
+  ];
+
   return (
-    <div>
-      <div className="flex gap-2 mb-2">
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-          variant={editor?.isActive("bold") ? "default" : "outline"}
-        >
-          <b>B</b>
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().toggleUnderline().run()}
-          variant={editor?.isActive("underline") ? "default" : "outline"}
-        >
-          <u>U</u>
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().toggleStrike().run()}
-          variant={editor?.isActive("strike") ? "default" : "outline"}
-        >
-          <s>S</s>
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().setTextAlign("left").run()}
-          variant={
-            editor?.isActive({ textAlign: "left" }) ? "default" : "outline"
-          }
-        >
-          چپ
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().setTextAlign("center").run()}
-          variant={
-            editor?.isActive({ textAlign: "center" }) ? "default" : "outline"
-          }
-        >
-          وسط
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().setTextAlign("right").run()}
-          variant={
-            editor?.isActive({ textAlign: "right" }) ? "default" : "outline"
-          }
-        >
-          راست
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-          variant={editor?.isActive("orderedList") ? "default" : "outline"}
-        >
-          1. لیست
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-          variant={editor?.isActive("italic") ? "default" : "outline"}
-        >
-          <i>I</i>
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => editor?.chain().focus().toggleBulletList().run()}
-          variant={editor?.isActive("bulletList") ? "default" : "outline"}
-        >
-          • لیست
-        </Button>
-        <label className="cursor-pointer">
-          <span className="px-2 py-1 bg-gray-200 rounded text-xs">
-            آپلود عکس
-          </span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
-        </label>
-      </div>
-      <div className="border rounded min-h-[120px] p-2 bg-white">
-        <EditorContent editor={editor} />
-      </div>
-    </div>
+    <ReactQuill
+      value={value}
+      onChange={onChange}
+      modules={modules}
+      formats={formats}
+      theme="snow"
+      style={{ minHeight: 150, background: "#fff" }}
+    />
   );
 }

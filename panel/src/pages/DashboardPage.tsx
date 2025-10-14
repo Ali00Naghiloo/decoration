@@ -13,19 +13,16 @@ import { Plus } from "lucide-react";
 
 export default function DashboardContent() {
   // آمار نمونه‌کارها
-  const {
-    data: samples,
-    isLoading,
-    isError,
-    error,
-  } = useQuery<Sample[]>({
+  const { data, isLoading, isError, error } = useQuery<{ items: Sample[] }>({
     queryKey: ["samples"],
     queryFn: getSamples,
   });
 
+  const samples = data?.items || [];
+
   // محاسبه آمار
   const stats = useMemo(() => {
-    const total = samples?.length || 0;
+    const total = samples.length || 0;
     // اگر فیلد status وجود ندارد، همه را فعال فرض می‌کنیم
     const active = total;
     const inactive = 0;

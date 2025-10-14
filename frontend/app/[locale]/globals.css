@@ -97,6 +97,8 @@ body {
   font-family: var(--font-primary);
   box-sizing: border-box;
   font-size: 16px;
+  max-width: 1500px;
+  margin: 0 auto;
   @apply font-sans;
 }
 

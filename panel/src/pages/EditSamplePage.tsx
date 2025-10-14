@@ -2,11 +2,12 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import toast from "react-hot-toast";
+import RichTextEditor from "@/src/components/forms/RichTextEditor";
 
 export default function EditSamplePage() {
   const router = useRouter();
@@ -26,8 +27,20 @@ export default function EditSamplePage() {
         const data = await getSampleById(id);
         setTitle(data.title);
         setDescription(data.description);
-        setImages(data.images || []);
-        setVideoUrl(data.video || null);
+
+        if (Array.isArray((data as any).images)) {
+          setImages((data as any).images);
+        } else if ((data as any).mediaUrl) {
+          setImages([(data as any).mediaUrl]);
+        } else {
+          setImages([]);
+        }
+
+        if ((data as any).videoUrl) {
+          setVideoUrl((data as any).videoUrl);
+        } else {
+          setVideoUrl(null);
+        }
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "خطا در دریافت اطلاعات نمونه");
@@ -53,7 +66,7 @@ export default function EditSamplePage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10">
+    <div className="mx-auto mt-10">
       <h1 className="text-2xl font-bold mb-6">ویرایش نمونه</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
@@ -62,12 +75,185 @@ export default function EditSamplePage() {
           onChange={(e) => setTitle(e.target.value)}
           required
         />
-        <Input
-          placeholder="توضیحات نمونه"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-        />
+        {/* توضیحات با RichTextEditor */}
+        <div>
+          <label className="block mb-1 font-semibold">توضیحات</label>
+          {typeof window !== "undefined" && (
+            <React.Suspense fallback={<div>در حال بارگذاری ویرایشگر...</div>}>
+              <RichTextEditor value={description} onChange={setDescription} />
+            </React.Suspense>
+          )}
+        </div>
+
+        <div className="mt-6">
+          <label className="block mb-1 font-semibold">
+            فایل‌های آپلود شده:
+          </label>
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {images.map((img, idx) => (
+                <div key={idx} className="relative group">
+                  <img
+                    src={img}
+                    alt={`نمونه کار ${idx + 1}`}
+                    className="w-32 h-32 object-cover rounded"
+                  />
+                  <button
+                    type="button"
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                    onClick={() => {
+                      const updated = images.filter((_, i) => i !== idx);
+                      setImages(updated);
+                    }}
+                  >
+                    حذف
+                  </button>
+                  <input
+                    id={`replace-image-${idx}`}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      if (e.target.files?.[0]) {
+                        try {
+                          const { uploadFile } = await import(
+                            "@/src/lib/upload"
+                          );
+                          const res = await uploadFile(e.target.files[0]);
+                          setImages((prev) =>
+                            prev.map((item, i) => (i === idx ? res.url : item))
+                          );
+                        } catch (err) {
+                          toast.error("جایگزینی تصویر ناموفق بود");
+                        }
+                      }
+                    }}
+                  />
+                  <label htmlFor={`replace-image-${idx}`}>
+                    <button
+                      type="button"
+                      className="absolute bottom-1 right-1 bg-blue-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                    >
+                      جایگزینی
+                    </button>
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+          {videoUrl && (
+            <div className="relative group mb-2">
+              <video
+                src={videoUrl}
+                controls
+                className="w-full max-h-64 rounded"
+              />
+              <button
+                type="button"
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                onClick={() => setVideoUrl(null)}
+              >
+                حذف
+              </button>
+              <input
+                id="replace-video"
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={async (e) => {
+                  if (e.target.files?.[0]) {
+                    try {
+                      const { uploadFile } = await import("@/src/lib/upload");
+                      const res = await uploadFile(e.target.files[0]);
+                      setVideoUrl(res.url);
+                    } catch (err) {
+                      toast.error("جایگزینی ویدیو ناموفق بود");
+                    }
+                  }
+                }}
+              />
+              <label htmlFor="replace-video">
+                <button
+                  type="button"
+                  className="absolute bottom-1 right-1 bg-blue-500 text-white rounded-full p-1 text-xs opacity-0 group-hover:opacity-100 transition"
+                >
+                  جایگزینی
+                </button>
+              </label>
+            </div>
+          )}
+          <div className="flex gap-2 mt-2">
+            <input
+              id="edit-upload-images"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={async (e) => {
+                if (e.target.files) {
+                  const filesArr = Array.from(e.target.files);
+                  try {
+                    // Debug log
+                    console.log("Uploading images:", filesArr);
+                    const { uploadFile } = await import("@/src/lib/upload");
+                    const uploadPromises = filesArr.map(async (file) => {
+                      try {
+                        const res = await uploadFile(file);
+                        return res.url;
+                      } catch (err) {
+                        toast.error("آپلود تصویر ناموفق بود");
+                        console.error("Image upload error:", err);
+                        return null;
+                      }
+                    });
+                    const uploadedUrls = (
+                      await Promise.all(uploadPromises)
+                    ).filter(Boolean) as string[];
+                    setImages((prev) => [...prev, ...uploadedUrls]);
+                  } catch (err) {
+                    toast.error("خطا در import یا آپلود تصویر");
+                    console.error("Upload handler error:", err);
+                  }
+                }
+              }}
+            />
+            <label htmlFor="edit-upload-images" style={{ cursor: "pointer" }}>
+              <span tabIndex={0}>
+                <Button type="button" variant="outline" size="sm">
+                  افزودن تصویر
+                </Button>
+              </span>
+            </label>
+            <input
+              id="edit-upload-video"
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={async (e) => {
+                if (e.target.files?.[0]) {
+                  const file = e.target.files[0];
+                  try {
+                    // Debug log
+                    console.log("Uploading video:", file);
+                    const { uploadFile } = await import("@/src/lib/upload");
+                    const res = await uploadFile(file);
+                    setVideoUrl(res.url);
+                  } catch (err) {
+                    toast.error("آپلود ویدیو ناموفق بود");
+                    console.error("Video upload error:", err);
+                  }
+                }
+              }}
+            />
+            <label htmlFor="edit-upload-video" style={{ cursor: "pointer" }}>
+              <span tabIndex={0}>
+                <Button type="button" variant="outline" size="sm">
+                  افزودن ویدیو
+                </Button>
+              </span>
+            </label>
+          </div>
+        </div>
         <Button
           type="submit"
           disabled={loading}
@@ -76,32 +262,6 @@ export default function EditSamplePage() {
           {loading ? "در حال ویرایش..." : "ویرایش"}
         </Button>
       </form>
-      {(images.length > 0 || videoUrl) && (
-        <div className="mt-6">
-          <label className="block mb-1 font-semibold">
-            فایل‌های آپلود شده:
-          </label>
-          {images.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {images.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`نمونه کار ${idx + 1}`}
-                  className="w-32 h-32 object-cover rounded"
-                />
-              ))}
-            </div>
-          )}
-          {videoUrl && (
-            <video
-              src={videoUrl}
-              controls
-              className="w-full max-h-64 rounded"
-            />
-          )}
-        </div>
-      )}
     </div>
   );
 }
