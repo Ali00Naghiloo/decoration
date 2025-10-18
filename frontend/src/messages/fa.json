@@ -28,5 +28,9 @@
   "locale": "{locale, select, fa {🇩🇪 Farsi} en {🇺🇸 English} other {Unknown}}",
   "LocaleSwitcher": {
     "label": "تغییر زبان"
-  }
+  },
+  "no-samples-found": "نمونه کاری یافت نشد",
+  "back": "بازگشت",
+  "share": "اشتراک گذاری",
+  "quote": "نقل قول"
 }

@@ -1,167 +1,219 @@
-// "use client";
-import dynamic from "next/dynamic";
+"use client";
+
+import { useRef } from "react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import type { AxiosInstance } from "axios";
+
+// Import your configured Axios instance
+// نمونه Axios پیکربندی شده خود را وارد کنید
 import api from "@/src/lib/api";
-import "react-quill/dist/quill.snow.css";
-import { useCallback, useState, useRef } from "react";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+// =================================================================================================
+// STEP 1: Import the Editor and Plugins to create a custom build
+// مرحله ۱: وارد کردن ادیتور و پلاگین‌ها برای ساخت یک بیلد سفارشی
+// =================================================================================================
+import { ClassicEditor } from "@ckeditor/ckeditor5-editor-classic";
+import { Essentials } from "@ckeditor/ckeditor5-essentials";
+import { Paragraph } from "@ckeditor/ckeditor5-paragraph";
+import { Bold, Italic, Underline } from "@ckeditor/ckeditor5-basic-styles";
+import { Heading } from "@ckeditor/ckeditor5-heading";
+import { Alignment } from "@ckeditor/ckeditor5-alignment";
+import { Link } from "@ckeditor/ckeditor5-link";
+import { List } from "@ckeditor/ckeditor5-list";
+import { BlockQuote } from "@ckeditor/ckeditor5-block-quote";
+import { Table, TableToolbar } from "@ckeditor/ckeditor5-table";
+import { MediaEmbed } from "@ckeditor/ckeditor5-media-embed";
+import { FontFamily, FontSize } from "@ckeditor/ckeditor5-font";
+import { Autoformat } from "@ckeditor/ckeditor5-autoformat";
 
-export default function RichTextEditor({
-  value,
-  onChange,
-}: {
+// THESE ARE THE PLUGINS FOR IMAGE RESIZING AND UPLOADING
+// این پلاگین‌ها برای تغییر اندازه و آپلود عکس هستند
+import {
+  Image,
+  ImageUpload,
+  ImageToolbar,
+  ImageStyle,
+  ImageResize,
+  ImageCaption,
+} from "@ckeditor/ckeditor5-image";
+
+// --- The props for your component ---
+interface EditorProps {
   value: string;
-  onChange: (val: string) => void;
-}) {
-  // لودینگ برای آپلود عکس
-  const [uploading, setUploading] = useState(false);
-  const quillRef = useRef<any>(null);
+  onChange: (data: string) => void;
+}
 
-  // Custom image upload handler
-  const imageHandler = useCallback(() => {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
+// --- Your custom upload adapter class (NO CHANGES NEEDED HERE) ---
+// --- کلاس آداپتور آپلود سفارشی شما (اینجا نیازی به تغییر نیست) ---
+class MyUploadAdapter {
+  private loader: any;
+  private api: AxiosInstance;
 
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      setUploading(true);
-      try {
-        const uploadUrl =
-          (api.defaults.baseURL?.replace(/\/$/, "") || "") + "/upload";
-        const response = await fetch(uploadUrl, {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Upload error:", response.status, errorText);
-          throw new Error(
-            "Failed to upload image: " + response.status + " " + errorText
-          );
-        }
-        const data = await response.json();
-        const editor = quillRef.current?.getEditor?.();
-        if (editor) {
-          const range = editor.getSelection();
-          // استفاده از آدرس کامل عکس از data.file.url
-          editor.insertEmbed(
-            range ? range.index : 0,
-            "image",
-            data.file?.url || data.url
-          );
-        }
-      } catch (error) {
-        console.error("Image upload error:", error);
-      } finally {
-        setUploading(false);
-      }
-    };
-  }, []);
-
-  const fonts = [
-    "yekan",
-    "satoshi",
-    "serif",
-    "sans-serif",
-    "monospace",
-    "tahoma",
-    "arial",
-    "roboto",
-    "times-new-roman",
-  ];
-  const sizes = [
-    "small",
-    false,
-    "large",
-    "huge",
-    "18px",
-    "24px",
-    "32px",
-    "48px",
-  ];
-  const modules = {
-    toolbar: {
-      container: [
-        [{ font: fonts }, { size: sizes }],
-        ["bold", "italic", "underline", "strike"],
-        [{ color: [] }, { background: [] }],
-        [{ script: "sub" }, { script: "super" }],
-        [{ header: 1 }, { header: 2 }, "blockquote", "code-block"],
-        [
-          { list: "ordered" },
-          { list: "bullet" },
-          { indent: "-1" },
-          { indent: "+1" },
-        ],
-        [{ align: [] }, { direction: "rtl" }],
-        ["link", "image", "video", "formula"],
-        ["clean"],
-        ["table"],
-      ],
-      handlers: {},
-    },
-    table: true,
-    clipboard: {
-      matchVisual: false,
-    },
-  };
-
-  // Custom fonts CSS for Quill
-  if (typeof window !== "undefined") {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      .ql-font-yekan { font-family: 'YekanBakhFaNum-Regular', yekan, sans-serif; }
-      .ql-font-satoshi { font-family: 'Satoshi', sans-serif; }
-      .ql-font-tahoma { font-family: Tahoma, sans-serif; }
-      .ql-font-arial { font-family: Arial, sans-serif; }
-      .ql-font-roboto { font-family: Roboto, sans-serif; }
-      .ql-font-serif { font-family: serif; }
-      .ql-font-sans-serif { font-family: sans-serif; }
-      .ql-font-monospace { font-family: monospace; }
-      .ql-font-times-new-roman { font-family: 'Times New Roman', serif; }
-    `;
-    document.head.appendChild(style);
+  constructor(loader: any, apiInstance: AxiosInstance) {
+    this.loader = loader;
+    this.api = apiInstance;
   }
 
-  const formats = [
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "color",
-    "background",
-    "script",
-    "header",
-    "blockquote",
-    "code-block",
-    "list",
-    "indent",
-    "align",
-    "direction",
-    "link",
-    "image",
-    "video",
-    "formula",
-    "table",
-  ];
+  public upload(): Promise<{ default: string }> {
+    return this.loader.file.then(
+      (file: File) =>
+        new Promise((resolve, reject) => {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          this.api
+            .post("/upload", formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            })
+            .then((res) => {
+              const url =
+                res.data?.data?.file?.url ||
+                res.data?.file?.url ||
+                res.data?.url;
+              if (!url) {
+                return reject(
+                  new Error("Invalid server response: No URL found.")
+                );
+              }
+              resolve({ default: url });
+            })
+            .catch((error) => {
+              const errorMessage =
+                error.response?.data?.message ||
+                error.message ||
+                "Upload failed.";
+              reject(errorMessage);
+            });
+        })
+    );
+  }
+
+  public abort(): void {
+    console.log("Upload aborted.");
+  }
+}
+
+// --- The plugin function that integrates the adapter (NO CHANGES NEEDED HERE) ---
+function MyCustomUploadAdapterPlugin(editor: any) {
+  editor.plugins.get("FileRepository").createUploadAdapter = (loader: any) => {
+    return new MyUploadAdapter(loader, api);
+  };
+}
+
+// --- The main Editor component ---
+export default function Editor({ value, onChange }: EditorProps) {
+  const editorRef = useRef<any>(null);
+
+  const editorConfig = {
+    // ========================================================================================
+    // STEP 2: Provide the list of plugins to the editor configuration
+    // مرحله ۲: لیست پلاگین‌ها را در تنظیمات ادیتور قرار دهید
+    // ========================================================================================
+    plugins: [
+      Essentials,
+      Paragraph,
+      Bold,
+      Italic,
+      Underline,
+      Heading,
+      Alignment,
+      Link,
+      List,
+      BlockQuote,
+      Table,
+      TableToolbar,
+      MediaEmbed,
+      FontFamily,
+      FontSize,
+      Autoformat,
+      // All Image plugins are required for resizing and uploading
+      Image,
+      ImageUpload,
+      ImageToolbar,
+      ImageStyle,
+      ImageResize,
+      ImageCaption,
+      // Your custom upload plugin must be included here
+      MyCustomUploadAdapterPlugin,
+    ],
+
+    toolbar: {
+      items: [
+        "heading",
+        "|",
+        "fontFamily",
+        "fontSize",
+        "|",
+        "bold",
+        "italic",
+        "underline",
+        "|",
+        "alignment",
+        "|",
+        "numberedList",
+        "bulletedList",
+        "|",
+        "link",
+        "uploadImage",
+        "blockQuote",
+        "insertTable",
+        "mediaEmbed",
+        "|",
+        "undo",
+        "redo",
+      ],
+    },
+
+    // ========================================================================================
+    // STEP 3: Configure the image resize options
+    // مرحله ۳: گزینه‌های تغییر اندازه عکس را پیکربندی کنید
+    // ========================================================================================
+    image: {
+      toolbar: [
+        "imageStyle:inline",
+        "imageStyle:block",
+        "imageStyle:side",
+        "|",
+        "toggleImageCaption",
+        "imageTextAlternative",
+        "|",
+        "resizeImage", // The new button for the resize dropdown
+      ],
+      resizeOptions: [
+        { name: "resizeImage:original", value: null, icon: "original" },
+        { name: "resizeImage:50", value: "50", icon: "medium" },
+        { name: "resizeImage:75", value: "75", icon: "large" },
+      ],
+    },
+
+    table: {
+      contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
+    },
+    fontFamily: {
+      options: [
+        "default",
+        "Yekan Bakh, Arial, sans-serif",
+        "Arial, Helvetica, sans-serif",
+        "Courier New, Courier, monospace",
+        "Georgia, serif",
+        "Times New Roman, Times, serif",
+      ],
+      supportAllValues: true,
+    },
+    language: "fa",
+  };
 
   return (
-    <ReactQuill
-      value={value}
-      onChange={onChange}
-      modules={modules}
-      formats={formats}
-      theme="snow"
-      style={{ minHeight: 150, background: "#fff" }}
+    <CKEditor
+      editor={ClassicEditor}
+      config={editorConfig}
+      data={value}
+      onReady={(editor) => {
+        editorRef.current = editor;
+      }}
+      onChange={(event, editor) => {
+        onChange(editor.getData());
+      }}
     />
   );
 }

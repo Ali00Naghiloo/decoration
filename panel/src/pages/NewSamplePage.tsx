@@ -1,10 +1,18 @@
 "use client";
 import React, { useState } from "react";
-import RichTextEditor from "@/src/components/forms/RichTextEditor";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import axios from "axios";
 import toast from "react-hot-toast";
+import dynamic from "next/dynamic";
+
+const RichTextEditor = dynamic(
+  () => import("@/src/components/forms/RichTextEditor"),
+  {
+    ssr: false, // This is crucial!
+    loading: () => <p>در حال بارگذاری ادیتور...</p>,
+  }
+);
 
 export default function NewSamplePage() {
   const [title, setTitle] = useState("");

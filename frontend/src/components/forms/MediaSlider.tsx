@@ -1,10 +1,20 @@
-import { Swiper, SwiperSlide } from "swiper/react";
+"use client";
+import dynamic from "next/dynamic";
 import "swiper/css";
 
 export interface MediaItem {
   type: "image" | "video";
   url: string;
 }
+
+// Swiper را فقط سمت کلاینت ایمپورت کن
+const Swiper = dynamic(() => import("swiper/react").then((mod) => mod.Swiper), {
+  ssr: false,
+});
+const SwiperSlide = dynamic(
+  () => import("swiper/react").then((mod) => mod.SwiperSlide),
+  { ssr: false, loading: () => <div>Loading...</div> }
+);
 
 export default function MediaSlider({ media }: { media: MediaItem[] }) {
   if (!media || media.length === 0) return null;
@@ -21,7 +31,7 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
     <Swiper
       spaceBetween={16}
       slidesPerView={1}
-      className="mb-6 rounded-lg overflow-hidden"
+      className="mb-6 rounded-lg overflow-hidden w-full h-full"
     >
       {slides.map((item, idx) => (
         <SwiperSlide key={idx}>

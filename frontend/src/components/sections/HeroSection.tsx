@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { ArrowDown } from "lucide-react";
 import { useTranslation } from "@/src/hooks/useTranslation";
-import heroImage from "/images/hero-section-image.png";
 
 export default function HeroSection() {
   const { t } = useTranslation();
@@ -69,7 +68,7 @@ export default function HeroSection() {
   return (
     <div className="xl:h-[90vh] flex flex-col gap-6 xl:gap-0 xl:flex-row p-[5%]">
       <div className="h-full w-full xl:w-2/5">
-        <div className="h-full flex flex-col gap-6 justify-center xl:max-w-3/4">
+        <div className="h-full flex flex-col gap-6 justify-center xl:max-w-[90%]">
           <Badge
             className={
               "bg-[rgba(0,111,255,0.04)] text-[#006FFF] px-4 py-2 rounded-[100px] font-thin"

@@ -25,7 +25,14 @@ router.post(
 );
 
 // Update a portfolio item
-router.put("/:id", upload.single("file"), updatePortfolioItem);
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "images", maxCount: 10 },
+    { name: "video", maxCount: 1 },
+  ]),
+  updatePortfolioItem
+);
 
 // Delete a portfolio item
 router.delete("/:id", deletePortfolioItem);

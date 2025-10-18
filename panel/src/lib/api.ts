@@ -33,7 +33,12 @@ export const createSample = async (data: {
 // Function to update a sample by its ID
 export const updateSample = async (
   id: string,
-  data: { title: string; description: string }
+  data: {
+    title: string;
+    description: string;
+    images?: string[];
+    videoUrl?: string;
+  }
 ) => {
   await api.put(`/samples/${id}`, data);
 };

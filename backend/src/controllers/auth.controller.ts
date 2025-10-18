@@ -5,8 +5,8 @@ import { AppError } from "../utils/AppError";
 
 // Function to sign a JWT
 const signToken = (id: string): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+  return jwt.sign({ id }, process.env.JWT_SECRET || "secret", {
+    expiresIn: "1d",
   });
 };
 
@@ -60,7 +60,7 @@ export const login = async (
     }
 
     // 4) If everything is okay, send token to the client
-    const token = signToken(user._id);
+    const token = signToken(user._id as string);
 
     res.status(200).json({
       status: "success",

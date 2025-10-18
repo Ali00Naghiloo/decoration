@@ -54,7 +54,12 @@ export default function EditSamplePage() {
     setLoading(true);
     try {
       const { updateSample } = await import("@/src/lib/api");
-      await updateSample(id, { title, description });
+      await updateSample(id, {
+        title,
+        description,
+        images,
+        videoUrl: videoUrl || undefined,
+      });
       toast.success("نمونه با موفقیت ویرایش شد!");
       router.push("/dashboard/samples");
     } catch (err) {
@@ -218,11 +223,16 @@ export default function EditSamplePage() {
               }}
             />
             <label htmlFor="edit-upload-images" style={{ cursor: "pointer" }}>
-              <span tabIndex={0}>
-                <Button type="button" variant="outline" size="sm">
-                  افزودن تصویر
-                </Button>
-              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  document.getElementById("edit-upload-images")?.click()
+                }
+              >
+                افزودن تصویر
+              </Button>
             </label>
             <input
               id="edit-upload-video"
@@ -246,18 +256,23 @@ export default function EditSamplePage() {
               }}
             />
             <label htmlFor="edit-upload-video" style={{ cursor: "pointer" }}>
-              <span tabIndex={0}>
-                <Button type="button" variant="outline" size="sm">
-                  افزودن ویدیو
-                </Button>
-              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  document.getElementById("edit-upload-video")?.click()
+                }
+              >
+                افزودن ویدیو
+              </Button>
             </label>
           </div>
         </div>
         <Button
           type="submit"
           disabled={loading}
-          className="bg-primary text-white hover:bg-primary/90"
+          className="w-full bg-primary text-white hover:bg-primary/90"
         >
           {loading ? "در حال ویرایش..." : "ویرایش"}
         </Button>

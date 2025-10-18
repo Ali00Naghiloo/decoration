@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "Yekan Bakh";
+  src: url("/fonts/YekanBakhFaNum-Regular.woff2") format("woff2"); /* Adjust path to your font file */
+  font-weight: normal;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -137,4 +144,18 @@ body {
   }
 }
 
-/* حذف font-face چون از localFont استفاده می‌شود */
+/* editor styles */
+.ck-content {
+  /* Set a default font for the editor content */
+  font-family: "Yekan Bakh", sans-serif !important;
+  direction: rtl; /* Set default direction to RTL */
+  text-align: right; /* Set default text alignment */
+}
+
+/* Make the custom font option work in the dropdown */
+.ck-content .font-family-yekan-bakh {
+  font-family: "Yekan Bakh", sans-serif !important;
+}
+.ck-content .font-family-satoshi {
+  font-family: "Satoshi", sans-serif !important;
+}

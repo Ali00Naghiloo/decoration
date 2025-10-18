@@ -13,10 +13,10 @@ if (!fs.existsSync(uploadDir)) {
 
 // Configure disk storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: any, file: any, cb: any) => {
     cb(null, uploadDir); // Save files to the 'uploads/' directory
   },
-  filename: (req, file, cb) => {
+  filename: (req: any, file: any, cb: any) => {
     // Create a unique filename to prevent overwrites: fieldname-timestamp.extension
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const extension = path.extname(file.originalname);
@@ -46,5 +46,7 @@ export const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 1024 * 1024 * 50, // 50MB file size limit
+    fieldSize: 1024 * 1024 * 10, // 10MB for non-file fields
+    fieldNameSize: 100, // max 100 chars for field names
   },
 });

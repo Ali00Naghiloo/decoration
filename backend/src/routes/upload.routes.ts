@@ -14,9 +14,10 @@ function handleUploadResponse(req: any, res: any) {
     data: {
       file: {
         id: req.file.filename,
-        url: `${req.protocol}://${req.get("host")}/uploads/${
-          req.file.filename
-        }`,
+        // استفاده از دامنه کانفیگ‌شده برای URL فایل
+        url: `${
+          process.env.FILE_SERVER_BASE_URL || "https://rokhnegar.art"
+        }/uploads/${req.file.filename}`,
         originalName: req.file.originalname,
         mimetype: req.file.mimetype,
         size: req.file.size,

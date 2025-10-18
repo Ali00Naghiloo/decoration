@@ -9,14 +9,16 @@ import path from "path";
 const window = new JSDOM("").window;
 const purify = DOMPurify(window as any);
 
+import { FILE_SERVER_BASE_URL } from "../config/db";
+
 // Helper function to build the full URL for a file
-const getFileUrl = (req: Request, filename: string) => {
-  return `${req.protocol}://${req.get("host")}/uploads/${filename}`;
+const getFileUrl = (_req: Request, filename: string) => {
+  return `${FILE_SERVER_BASE_URL}/uploads/${filename}`;
 };
 
 // --- CREATE ---
 export const createPortfolioItem = async (
-  req: Request & { file?: any },
+  req: Request & { files?: any },
   res: Response,
   next: NextFunction
 ) => {
@@ -28,19 +30,33 @@ export const createPortfolioItem = async (
 
     const sanitizedDescription = purify.sanitize(description);
 
-    let mediaUrl;
-    let mediaType;
+    // ذخیره چند عکس و انتخاب کاور
+    let images: string[] = [];
+    let cover: string | undefined = undefined;
 
-    if (req.file) {
-      mediaUrl = getFileUrl(req, req.file.filename);
-      mediaType = req.file.mimetype.startsWith("image") ? "image" : "video";
+    if (req.files && req.files["images"]) {
+      images = req.files["images"].map((file: any) =>
+        getFileUrl(req, file.filename)
+      );
+      if (images.length > 0) {
+        cover = images[0]; // اولین عکس به عنوان کاور
+      }
+    }
+
+    // ویدیو (اختیاری)
+    let videoUrl: string | undefined = undefined;
+    if (req.files && req.files["video"] && req.files["video"][0]) {
+      videoUrl = getFileUrl(req, req.files["video"][0].filename);
     }
 
     const newItem = await PortfolioItem.create({
       title,
       description: sanitizedDescription,
-      mediaUrl,
-      mediaType,
+      images,
+      cover,
+      videoUrl,
+      mediaUrl: cover, // برای سازگاری با کد قبلی
+      mediaType: "image",
     });
 
     res.status(201).json({ status: "success", data: newItem });
@@ -64,17 +80,10 @@ export const getPortfolioItemById = async (
     if (!item) {
       return next(new AppError("No item found with that ID.", 404));
     }
-    // فرض بر این که فقط یک عکس یا ویدیو دارد
-    const images =
-      item.mediaType === "image" && item.mediaUrl ? [item.mediaUrl] : [];
-    const videoUrl =
-      item.mediaType === "video" && item.mediaUrl ? item.mediaUrl : null;
     res.status(200).json({
       status: "success",
       data: {
         ...item.toObject(),
-        images,
-        videoUrl,
       },
     });
   } catch (error) {
@@ -93,11 +102,11 @@ export const getAllPortfolioItems = async (
 ) => {
   try {
     const items = await PortfolioItem.find();
-    // اضافه کردن فیلد cover به هر آیتم
+    // ارسال آرایه عکس‌ها و کاور
     const itemsWithCover = items.map((item: any) => ({
       ...item.toObject(),
-      cover:
-        item.mediaType === "image" && item.mediaUrl ? item.mediaUrl : undefined,
+      cover: item.cover || (item.images && item.images[0]) || undefined,
+      images: item.images || [],
     }));
     res.status(200).json({
       status: "success",
@@ -110,7 +119,7 @@ export const getAllPortfolioItems = async (
 
 // --- UPDATE ---
 export const updatePortfolioItem = async (
-  req: Request & { file?: any },
+  req: Request & { files?: any },
   res: Response,
   next: NextFunction
 ) => {
@@ -124,22 +133,24 @@ export const updatePortfolioItem = async (
     if (req.body.description)
       item.description = purify.sanitize(req.body.description);
 
-    if (req.file) {
-      // 1. Delete the old file from the server if it exists
-      if (item.mediaUrl) {
-        const oldFilename = item.mediaUrl.split("/uploads/")[1];
-        if (oldFilename) {
-          const oldFilePath = path.join("uploads", oldFilename);
-          fs.unlink(oldFilePath, (err) => {
-            if (err) console.error("Error deleting old file:", err);
-          });
-        }
+    // به‌روزرسانی عکس‌ها
+    if (req.files && req.files["images"]) {
+      const images = req.files["images"].map((file: any) =>
+        getFileUrl(req, file.filename)
+      );
+      if (images.length > 0) {
+        item.images = images;
+        item.cover = images[0];
+        item.mediaUrl = images[0];
+        item.mediaType = "image";
       }
-      // 2. Set the URL for the new file
-      item.mediaUrl = getFileUrl(req, req.file.filename);
-      item.mediaType = req.file.mimetype.startsWith("image")
-        ? "image"
-        : "video";
+    }
+
+    // به‌روزرسانی ویدیو
+    if (req.files && req.files["video"] && req.files["video"][0]) {
+      const videoUrl = getFileUrl(req, req.files["video"][0].filename);
+      item.videoUrl = videoUrl;
+      item.mediaType = "video";
     }
 
     const updatedItem = await item.save();

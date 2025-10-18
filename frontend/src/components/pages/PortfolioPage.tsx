@@ -1,15 +1,17 @@
 import React from "react";
 import Header from "@/src/components/layout/Header";
 import Footer from "@/src/components/layout/Footer";
-import Samples from "@/src/components/sections/Samples";
+import PortfolioSamples from "@/src/components/sections/PortfolioSamples";
 import HeroSection from "@/src/components/sections/HeroSection";
 
 export default function PortfolioPage() {
   return (
     <>
       <Header />
-      <HeroSection />
-      <Samples />
+      <div className="max-w-[1440px] mx-auto">
+        <HeroSection />
+        <PortfolioSamples />
+      </div>
       <Footer />
     </>
   );

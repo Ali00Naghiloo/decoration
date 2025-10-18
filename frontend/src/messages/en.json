@@ -28,5 +28,9 @@
   "locale": "{locale, select, fa {fa فارسی} en {🇺🇸 English} other {Unknown}}",
   "LocaleSwitcher": {
     "label": "Change language"
-  }
+  },
+  "no-samples-found": "No samples found",
+  "back": "Back",
+  "share": "Share",
+  "quote": "Quote"
 }

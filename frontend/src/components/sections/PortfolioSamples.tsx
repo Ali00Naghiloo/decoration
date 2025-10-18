@@ -3,8 +3,9 @@
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { Badge } from "../ui/badge";
 import SampleCard from "./SampleCard";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Link } from "@/src/i18n/navigation";
+import { apiFetch } from "@/src/lib/api";
 
 interface PortfolioItem {
   _id: string;
@@ -14,16 +15,15 @@ interface PortfolioItem {
   cover?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
 export default function Samples() {
   const { t } = useTranslation();
   const [samples, setSamples] = useState<PortfolioItem[]>([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/samples`)
-      .then((res) => res.json())
-      .then((data) => setSamples(data?.data || []));
+    apiFetch("/samples").then(({ data }) => {
+      console.log(data);
+      setSamples(Array.isArray(data) ? data : []);
+    });
   }, []);
 
   return (
@@ -44,12 +44,13 @@ export default function Samples() {
 
         <div className="flex gap-8 flex-wrap py-5 lg:p-20 justify-center">
           {samples.length === 0 && (
-            <div className="text-gray-400">نمونه‌کاری ثبت نشده است.</div>
+            <div className="text-gray-400">{t("no-samples-found")}</div>
           )}
           {samples.map((sm) => (
             <Link
               key={sm._id}
-              href={`/fa/sample/${sm._id}`}
+              href={`/samples/${sm._id}`}
+              className="cursor-pointer"
               style={{ textDecoration: "none" }}
             >
               <SampleCard
