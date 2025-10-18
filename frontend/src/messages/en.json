@@ -32,5 +32,6 @@
   "no-samples-found": "No samples found",
   "back": "Back",
   "share": "Share",
-  "quote": "Quote"
+  "quote": "Quote",
+  "loading-samples": "Loading samples..."
 }

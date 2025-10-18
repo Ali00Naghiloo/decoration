@@ -18,11 +18,15 @@ interface PortfolioItem {
 export default function Samples() {
   const { t } = useTranslation();
   const [samples, setSamples] = useState<PortfolioItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     apiFetch("/samples").then(({ data }) => {
       console.log(data);
-      setSamples(Array.isArray(data) ? data : []);
+      if (Array.isArray(data)) {
+        setSamples(data);
+      }
+      setLoading(false);
     });
   }, []);
 
@@ -43,7 +47,10 @@ export default function Samples() {
         </div>
 
         <div className="flex gap-8 flex-wrap py-5 lg:p-20 justify-center">
-          {samples.length === 0 && (
+          {loading && (
+            <div className="text-gray-400">{t("loading-samples")}</div>
+          )}
+          {!loading && samples.length === 0 && (
             <div className="text-gray-400">{t("no-samples-found")}</div>
           )}
           {samples.map((sm) => (

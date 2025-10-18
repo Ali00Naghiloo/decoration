@@ -62,12 +62,34 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
           <h1 className="text-5xl max-w-3/4">{item.title}</h1>
           <div></div>
         </div>
-        <div className="w-1/2 h-1/2 ">
+        <div className="w-1/2 h-1/2 px-5 lg:px-10">
           <MediaSlider media={media} />
         </div>
       </div>
 
       <div className="max-w-[900px] mx-auto flex flex-col gap-5">
+        <div className="w-full">
+          {
+            <div className="w-full">
+              <div className="relative pt-[56.25%] my-10">
+                {" "}
+                {/* 16:9 aspect ratio */}
+                <video
+                  src={item.videoUrl}
+                  poster={item.cover}
+                  controls
+                  playsInline
+                  loop
+                  autoPlay
+                  preload="metadata"
+                  className="absolute inset-0 w-full h-full object-cover rounded-lg bg-black"
+                  aria-label={item.title ?? "video"}
+                />
+              </div>
+            </div>
+          }
+        </div>
+
         <div className="w-full rounded-xl bg-[#F8F9FF] border border-[rgb(0,111,255,0.1)] lg:p-10 p-3 flex flex-col gap-4">
           <div className="bg-[rgba(0,111,255,0.4)] px-3 p-2 text-[#006FFF] rounded-full w-fit">
             {t("quote")}
