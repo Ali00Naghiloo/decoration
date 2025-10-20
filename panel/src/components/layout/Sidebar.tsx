@@ -15,7 +15,10 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 flex-shrink-0 bg-gray-800 text-white p-4 flex flex-col">
-      <h1 className="text-2xl font-bold mb-8">پنل مدیریت</h1>
+      <div className="flex flex-col items-center mb-8">
+        <img src="/logo.png" alt="پنل مدیریت" className="w-16 h-16 mb-2" />
+        <h1 className="text-2xl font-bold">پنل مدیریت</h1>
+      </div>
       <nav className="flex-grow">
         <ul>
           {navLinks.map((link) => (

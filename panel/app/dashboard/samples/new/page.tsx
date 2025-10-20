@@ -1,2 +1,2 @@
-import NewSamplePage from "@/src/pages/NewSamplePage";
+import NewSamplePage from "@/src/components/pages/NewSamplePage";
 export default NewSamplePage;

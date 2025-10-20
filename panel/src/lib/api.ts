@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Sample } from "@/src/types"; // Import our new type
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
 });
 // Interceptor to add the JWT token (remains the same)
 api.interceptors.request.use((config) => {
@@ -16,8 +16,8 @@ api.interceptors.request.use((config) => {
 // --- NEW API FUNCTIONS ---
 // Function to fetch all samples
 export const getSamples = async (): Promise<{ items: Sample[] }> => {
-  const response = await api.get("/samples");
-  return response.data.data;
+  const response = await api.get("/samples?all=true");
+  return { items: response.data.data };
 };
 // Function to delete a sample by its ID
 export const deleteSample = async (id: string): Promise<void> => {
@@ -46,6 +46,13 @@ export const updateSample = async (
 export const getSampleById = async (id: string): Promise<Sample> => {
   const response = await api.get(`/samples/${id}`);
   return response.data.data;
+};
+// Function to update sample status by its ID
+export const updateSampleStatus = async (
+  id: string,
+  status: number
+): Promise<void> => {
+  await api.patch(`/samples/${id}/status`, { status });
 };
 
 export default api;

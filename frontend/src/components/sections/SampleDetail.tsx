@@ -14,7 +14,7 @@ export interface PortfolioItem {
   description?: string;
   images?: string[];
   mediaUrl?: string;
-  mediaType?: string;
+  mediaType?: string[];
   videoUrl?: string;
   category?: string;
 }
@@ -26,6 +26,7 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
     media.push(...item.images.map((url) => ({ type: "image" as const, url })));
   else if (item.cover) media.push({ type: "image", url: item.cover });
   const { t } = useTranslation();
+  console.log(item);
 
   const socials = [
     {
@@ -49,8 +50,8 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
   return (
     <div className="flex flex-col">
       {/* start section */}
-      <div className="w-full flex justify-between items-center flex-wrap lg:h-[90vh]">
-        <div className="w-1/2 h-full flex flex-col justify-around px-8">
+      <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-0 lg:h-[90vh]">
+        <div className="w-full lg:w-4/10 h-full flex flex-col justify-around px-8 gap-10">
           <div className="w-fit">
             <Link href={"/"}>
               <Button variant="link" className="mb-auto">
@@ -59,15 +60,15 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
               </Button>
             </Link>
           </div>
-          <h1 className="text-5xl max-w-3/4">{item.title}</h1>
+          <h1 className="text-4xl g:text-6xl">{item.title}</h1>
           <div></div>
         </div>
-        <div className="w-1/2 h-1/2 px-5 lg:px-10">
+        <div className="w-6/10 h-1/2 px-5 lg:px-10">
           <MediaSlider media={media} />
         </div>
       </div>
 
-      <div className="max-w-[900px] mx-auto flex flex-col gap-5">
+      <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5">
         <div className="w-full">
           {
             <div className="w-full">

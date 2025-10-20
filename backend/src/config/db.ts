@@ -1,6 +1,8 @@
 // File server base URL for uploaded files
 export const FILE_SERVER_BASE_URL =
-  process.env.FILE_SERVER_BASE_URL || "http://localhost:5000";
+  process.env.FILE_BASE_URL && process.env.FILE_BASE_URL !== "undefined"
+    ? process.env.FILE_BASE_URL
+    : "http://localhost:5000/api";
 import mongoose from "mongoose";
 
 export const connectDB = async () => {

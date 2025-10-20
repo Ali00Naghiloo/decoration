@@ -1,3 +1,5 @@
+"use client";
+
 import Header from "@/src/components/layout/Header";
 import Footer from "@/src/components/layout/Footer";
 import SampleDetail, {

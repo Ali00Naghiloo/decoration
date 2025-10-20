@@ -4,11 +4,11 @@ import fs from "fs";
 import { AppError } from "../utils/AppError";
 
 // Define the destination for our uploads
-const uploadDir = "uploads/";
+const uploadDir = path.join(__dirname, "../uploads");
 
 // Ensure the upload directory exists
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // Configure disk storage

@@ -7,7 +7,12 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import toast from "react-hot-toast";
-import RichTextEditor from "@/src/components/forms/RichTextEditor";
+import dynamic from "next/dynamic";
+import { updateSample } from "@/src/lib/api";
+const RichTextEditor = dynamic(
+  () => import("@/src/components/forms/RichTextEditor"),
+  { ssr: false }
+);
 
 export default function EditSamplePage() {
   const router = useRouter();
@@ -16,6 +21,7 @@ export default function EditSamplePage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [des, setDes] = useState(""); // توضیح خلاصه
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -27,20 +33,15 @@ export default function EditSamplePage() {
         const data = await getSampleById(id);
         setTitle(data.title);
         setDescription(data.description);
+        setDes(data.des || "");
 
-        if (Array.isArray((data as any).images)) {
-          setImages((data as any).images);
-        } else if ((data as any).mediaUrl) {
-          setImages([(data as any).mediaUrl]);
+        if (Array.isArray(data.images)) {
+          setImages(data.images);
         } else {
           setImages([]);
         }
 
-        if ((data as any).videoUrl) {
-          setVideoUrl((data as any).videoUrl);
-        } else {
-          setVideoUrl(null);
-        }
+        setVideoUrl(null);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "خطا در دریافت اطلاعات نمونه");
@@ -53,13 +54,54 @@ export default function EditSamplePage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { updateSample } = await import("@/src/lib/api");
-      await updateSample(id, {
+      // Dynamically import uploadFile utility
+      const { uploadFile } = await import("@/src/lib/upload");
+
+      // Upload new images if any (File), keep URLs as is
+      const uploadedImages: string[] = [];
+      for (const img of images) {
+        if (typeof img === "string") {
+          uploadedImages.push(img);
+        } else if (
+          img &&
+          typeof img === "object" &&
+          "name" in img &&
+          "type" in img
+        ) {
+          const res = await uploadFile(img as File);
+          uploadedImages.push(res.url);
+        }
+      }
+
+      // Upload new video if needed
+      let videoUrlToSend: string | undefined = undefined;
+      if (
+        videoUrl &&
+        typeof videoUrl === "object" &&
+        "name" in videoUrl &&
+        "type" in videoUrl
+      ) {
+        const res = await uploadFile(videoUrl as File);
+        videoUrlToSend = res.url;
+      } else if (typeof videoUrl === "string") {
+        videoUrlToSend = videoUrl;
+      }
+
+      const data: {
+        title: string;
+        description: string;
+        des: string;
+        images?: string[];
+        videoUrl?: string;
+      } = {
         title,
         description,
-        images,
-        videoUrl: videoUrl || undefined,
-      });
+        des,
+        images: uploadedImages,
+        videoUrl: videoUrlToSend,
+      };
+
+      await updateSample(id, data);
       toast.success("نمونه با موفقیت ویرایش شد!");
       router.push("/dashboard/samples");
     } catch (err) {
@@ -80,14 +122,17 @@ export default function EditSamplePage() {
           onChange={(e) => setTitle(e.target.value)}
           required
         />
+        <Input
+          placeholder="توضیح خلاصه (des)"
+          value={des}
+          onChange={(e) => setDes(e.target.value)}
+        />
         {/* توضیحات با RichTextEditor */}
         <div>
           <label className="block mb-1 font-semibold">توضیحات</label>
-          {typeof window !== "undefined" && (
-            <React.Suspense fallback={<div>در حال بارگذاری ویرایشگر...</div>}>
-              <RichTextEditor value={description} onChange={setDescription} />
-            </React.Suspense>
-          )}
+          <React.Suspense fallback={<div>در حال بارگذاری ویرایشگر...</div>}>
+            <RichTextEditor value={description} onChange={setDescription} />
+          </React.Suspense>
         </div>
 
         <div className="mt-6">

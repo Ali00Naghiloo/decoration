@@ -1,4 +1,4 @@
-import SamplesPage from "@/src/pages/SamplesPage";
+import SamplesPage from "@/src/components/pages/SamplesPage";
 
 export default function page() {
   return (

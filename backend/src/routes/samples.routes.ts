@@ -6,7 +6,7 @@ import {
   getAllPortfolioItems,
   // Add this for getting a single portfolio item by ID
   // getPortfolioItemById,
-} from "../controllers/portfolio.controller";
+} from "../controllers/samples.controller";
 const router = Router();
 
 import { upload } from "../middleware/upload.moddleware";
@@ -41,7 +41,7 @@ router.delete("/:id", deletePortfolioItem);
  * Get a single portfolio item by ID
  * GET /api/samples/:id
  */
-import { getPortfolioItemById } from "../controllers/portfolio.controller";
+import { getPortfolioItemById } from "../controllers/samples.controller";
 router.get("/:id", getPortfolioItemById);
 
 /**
@@ -50,4 +50,21 @@ router.get("/:id", getPortfolioItemById);
  */
 /* حذف شد: آپلود فایل مستقل به روت عمومی منتقل شد */
 
+/**
+ * تغییر status نمونه کار با دکمه (در جدول)
+ * PATCH /api/samples/:id/status
+ */
+import { Sample } from "../models/Sample.model";
+router.patch("/:id/status", async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const item = await Sample.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: "Not found" });
+    item.status = status;
+    await item.save();
+    res.json({ status: "success", data: item });
+  } catch (err) {
+    next(err);
+  }
+});
 export default router;

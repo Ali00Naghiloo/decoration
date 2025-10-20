@@ -6,6 +6,7 @@ import { Button } from "@/src/components/ui/button";
 import axios from "axios";
 import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
+import api from "@/src/lib/api";
 
 const RichTextEditor = dynamic(
   () => import("@/src/components/forms/RichTextEditor"),
@@ -18,6 +19,8 @@ const RichTextEditor = dynamic(
 export default function NewSamplePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [des, setDes] = useState(""); // توضیح خلاصه
+  const [status, setStatus] = useState(1); // وضعیت نمایش
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,21 +38,17 @@ export default function NewSamplePage() {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
+      formData.append("des", des);
+      formData.append("status", status.toString());
       files.forEach((file, idx) => {
         formData.append("images", file);
       });
       if (video) {
         formData.append("video", video);
       }
-      const res = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL
-          ? process.env.NEXT_PUBLIC_API_URL + "/samples"
-          : "http://localhost:5000/api/samples",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      await api.post("/samples", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       toast.success("نمونه‌کار جدید با موفقیت ایجاد شد!");
       setTitle("");
       setDescription("");
@@ -82,7 +81,9 @@ export default function NewSamplePage() {
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 font-semibold">عنوان نمونه‌کار</label>
+          <label className="block mb-1 font-semibold">
+            عنوان نمونه‌کار (title)
+          </label>
           <Input
             type="text"
             value={title}
@@ -92,7 +93,19 @@ export default function NewSamplePage() {
           />
         </div>
         <div>
-          <label className="block mb-1 font-semibold">توضیحات</label>
+          <label className="block mb-1 font-semibold">توضیح خلاصه (des)</label>
+          <Input
+            type="text"
+            value={des}
+            onChange={(e) => setDes(e.target.value)}
+            placeholder="توضیح کوتاه برای کارت"
+            required
+          />
+        </div>
+        <div>
+          <label className="block mb-1 font-semibold">
+            توضیحات (description)
+          </label>
           {typeof window !== "undefined" && (
             <RichTextEditor
               value={description}
@@ -102,7 +115,7 @@ export default function NewSamplePage() {
         </div>
         <div>
           <label className="block mb-1 font-semibold">
-            آپلود تصاویر (چندتایی)
+            آپلود تصاویر (images)
           </label>
           <input
             ref={imageInputRef}

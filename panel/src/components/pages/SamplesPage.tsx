@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSamples, deleteSample } from "@/src/lib/api";
+import { updateSampleStatus } from "@/src/lib/api";
 import { Sample } from "@/src/types";
 import Link from "next/link";
 import { Plus, Trash2, Edit } from "lucide-react";
@@ -21,14 +22,16 @@ export default function SamplesPage() {
 
   // 1. Fetching data with useQuery
   const {
-    data: samples,
+    data: samplesData,
     isLoading,
     isError,
     error,
-  } = useQuery<Sample[]>({
+  } = useQuery<{ items: Sample[] }>({
     queryKey: ["samples"], // A unique key for this query
     queryFn: getSamples, // The function that fetches the data
   });
+
+  const samples = samplesData?.items || [];
 
   // 2. Setting up the mutation for deleting a sample
   const deleteMutation = useMutation({
@@ -48,6 +51,30 @@ export default function SamplesPage() {
       deleteMutation.mutate(id);
     }
   };
+
+  // Mutation for updating sample status
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: number }) =>
+      updateSampleStatus(id, status),
+    onSuccess: () => {
+      toast.success("وضعیت نمونه با موفقیت تغییر کرد!");
+      queryClient.invalidateQueries({ queryKey: ["samples"] });
+    },
+    onError: (error: unknown) => {
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof (error as { message?: unknown }).message === "string"
+      ) {
+        toast.error(
+          `خطا در تغییر وضعیت: ${(error as { message: string }).message}`
+        );
+      } else {
+        toast.error("خطا در تغییر وضعیت");
+      }
+    },
+  });
 
   // 3. Handling UI states
   if (isLoading) {
@@ -77,18 +104,66 @@ export default function SamplesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>عنوان</TableHead>
-              <TableHead>تاریخ ایجاد</TableHead>
+              <TableHead className="text-right">عنوان</TableHead>
+              <TableHead className="text-right">تاریخ ایجاد</TableHead>
+              <TableHead className="text-right">وضعیت</TableHead>
               <TableHead className="text-right">عملیات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {samples && samples.length > 0 ? (
-              samples.map((sample) => (
+              samples.map((sample: Sample) => (
                 <TableRow key={sample._id}>
                   <TableCell className="font-medium">{sample.title}</TableCell>
                   <TableCell>
                     {new Date(sample.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant={sample.status === 1 ? "default" : "outline"}
+                      disabled={
+                        statusMutation.isPending &&
+                        statusMutation.variables?.id === sample._id
+                      }
+                      onClick={() => {
+                        const newStatus = sample.status === 1 ? 0 : 1;
+                        statusMutation.mutate({
+                          id: sample._id,
+                          status: newStatus,
+                        });
+                      }}
+                    >
+                      {statusMutation.isPending &&
+                      statusMutation.variables?.id === sample._id ? (
+                        <span className="flex items-center gap-1">
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            />
+                          </svg>
+                          در حال تغییر...
+                        </span>
+                      ) : sample.status === 1 ? (
+                        "فعال"
+                      ) : (
+                        "غیرفعال"
+                      )}
+                    </Button>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="secondary" size="sm" asChild>
@@ -109,7 +184,7 @@ export default function SamplesPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={3} className="text-center">
+                <TableCell colSpan={4} className="text-center">
                   No samples found.
                 </TableCell>
               </TableRow>

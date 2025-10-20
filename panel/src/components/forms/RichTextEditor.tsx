@@ -17,51 +17,55 @@ interface EditorProps {
 // ========================================================================
 class MyUploadAdapter {
   private loader: any;
+  private api: AxiosInstance;
 
-  constructor(loader: any) {
-    // ما دیگر به apiInstance نیازی نداریم چون آپلودی به سرور انجام نمی‌شود
+  constructor(loader: any, apiInstance: AxiosInstance) {
     this.loader = loader;
+    this.api = apiInstance;
   }
 
-  // این تابع upload است که تغییر کرده
   public upload(): Promise<{ default: string }> {
-    // به جای آپلود، از FileReader برای خواندن فایل به صورت DataURL (Base64) استفاده می‌کنیم
     return this.loader.file.then(
       (file: File) =>
         new Promise((resolve, reject) => {
-          const reader = new FileReader();
-
-          reader.onload = () => {
-            // وقتی خواندن فایل تمام شد، نتیجه که همان رشته Base64 است را برمی‌گردانیم
-            console.log("Image converted to Base64 successfully.");
-            resolve({ default: reader.result as string });
-          };
-
-          reader.onerror = (error) => {
-            console.error("Error converting file to Base64:", error);
-            reject(error);
-          };
-
-          reader.onabort = () => {
-            reject();
-          };
-
-          // این دستور، فرآیند خواندن فایل را شروع می‌کند
-          reader.readAsDataURL(file);
+          const formData = new FormData();
+          formData.append("file", file);
+          this.api
+            .post("/upload", formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            })
+            .then((res) => {
+              const url =
+                res.data?.data?.file?.url ||
+                res.data?.file?.url ||
+                res.data?.url;
+              if (!url) {
+                return reject(
+                  new Error("Invalid server response: No URL found.")
+                );
+              }
+              resolve({ default: url });
+            })
+            .catch((error) => {
+              const errorMessage =
+                error.response?.data?.message ||
+                error.message ||
+                "Upload failed.";
+              reject(errorMessage);
+            });
         })
     );
   }
 
   public abort(): void {
-    // در این حالت، نیازی به کار خاصی برای لغو عملیات نیست
     console.log("Upload aborted.");
   }
 }
 
-// این تابع بدون تغییر باقی می‌ماند، فقط دیگر api را به آداپتور پاس نمی‌دهد
+// و این تابع را هم به حالت قبلی برگردانید
 function MyCustomUploadAdapterPlugin(editor: any) {
   editor.plugins.get("FileRepository").createUploadAdapter = (loader: any) => {
-    return new MyUploadAdapter(loader);
+    return new MyUploadAdapter(loader, api);
   };
 }
 

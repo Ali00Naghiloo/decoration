@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import toast from "react-hot-toast";
-import axios from "axios";
+import api from "@/src/lib/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -17,12 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL
-          ? process.env.NEXT_PUBLIC_API_URL + "/auth/login"
-          : "http://localhost:5000/api/auth/login",
-        { username, password }
-      );
+      const res = await api.post("/auth/login", { username, password });
       if (res.data && res.data.token) {
         localStorage.setItem("authToken", res.data.token);
         toast.success("ورود با موفقیت انجام شد!");
@@ -31,11 +26,16 @@ export default function LoginPage() {
         toast.error("پاسخ نامعتبر از سرور دریافت شد.");
       }
     } catch (err) {
-      if (axios.isAxiosError(err)) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "isAxiosError" in err &&
+        (err as any).isAxiosError
+      ) {
         const apiMsg =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
+          (err as any).response?.data?.message ||
+          (err as any).response?.data?.error ||
+          (err as any).message ||
           "ورود ناموفق بود. لطفاً اطلاعات خود را بررسی کنید.";
         // ترجمه خطاها به فارسی
         if (apiMsg.includes("Incorrect username or password")) {

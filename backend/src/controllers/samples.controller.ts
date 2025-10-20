@@ -1,15 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import { PortfolioItem } from "../models/PortfolioItem.model";
+import { Sample } from "../models/Sample.model";
 import { AppError } from "../utils/AppError";
 import { JSDOM } from "jsdom";
 import DOMPurify from "dompurify";
 import fs from "fs";
 import path from "path";
+import { FILE_SERVER_BASE_URL } from "../config/db";
 
 const window = new JSDOM("").window;
 const purify = DOMPurify(window as any);
-
-import { FILE_SERVER_BASE_URL } from "../config/db";
 
 // Helper function to build the full URL for a file
 const getFileUrl = (_req: Request, filename: string) => {
@@ -23,7 +22,7 @@ export const createPortfolioItem = async (
   next: NextFunction
 ) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, status, des } = req.body;
     if (!title || !description) {
       return next(new AppError("Title and description are required.", 400));
     }
@@ -49,14 +48,21 @@ export const createPortfolioItem = async (
       videoUrl = getFileUrl(req, req.files["video"][0].filename);
     }
 
-    const newItem = await PortfolioItem.create({
+    // تعیین نوع مدیا بر اساس وجود تصاویر و ویدیو
+    const mediaTypeArr = [];
+    if (images.length > 0) mediaTypeArr.push("image");
+    if (videoUrl) mediaTypeArr.push("video");
+
+    const newItem = await Sample.create({
       title,
       description: sanitizedDescription,
       images,
       cover,
       videoUrl,
       mediaUrl: cover, // برای سازگاری با کد قبلی
-      mediaType: "image",
+      mediaType: mediaTypeArr,
+      status: typeof status !== "undefined" ? status : 1,
+      des: des || "",
     });
 
     res.status(201).json({ status: "success", data: newItem });
@@ -76,7 +82,7 @@ export const getPortfolioItemById = async (
   next: NextFunction
 ) => {
   try {
-    const item = await PortfolioItem.findById(req.params.id);
+    const item = await Sample.findById(req.params.id);
     if (!item) {
       return next(new AppError("No item found with that ID.", 404));
     }
@@ -101,7 +107,9 @@ export const getAllPortfolioItems = async (
   next: NextFunction
 ) => {
   try {
-    const items = await PortfolioItem.find();
+    // اگر کوئری all=true باشد، همه نمونه‌کارها را برگردان (برای پنل)
+    const filter = req.query.all === "true" ? {} : { status: 1 };
+    const items = await Sample.find(filter);
     // ارسال آرایه عکس‌ها و کاور
     const itemsWithCover = items.map((item: any) => ({
       ...item.toObject(),
@@ -124,7 +132,7 @@ export const updatePortfolioItem = async (
   next: NextFunction
 ) => {
   try {
-    const item = await PortfolioItem.findById(req.params.id);
+    const item = await Sample.findById(req.params.id);
     if (!item) {
       return next(new AppError("No item found with that ID.", 404));
     }
@@ -132,6 +140,8 @@ export const updatePortfolioItem = async (
     if (req.body.title) item.title = req.body.title;
     if (req.body.description)
       item.description = purify.sanitize(req.body.description);
+    if (typeof req.body.status !== "undefined") item.status = req.body.status;
+    if (typeof req.body.des !== "undefined") item.des = req.body.des;
 
     // به‌روزرسانی عکس‌ها
     if (req.files && req.files["images"]) {
@@ -167,7 +177,7 @@ export const deletePortfolioItem = async (
   next: NextFunction
 ) => {
   try {
-    const item = await PortfolioItem.findByIdAndDelete(req.params.id);
+    const item = await Sample.findByIdAndDelete(req.params.id);
     if (!item) {
       return next(new AppError("No item found with that ID.", 404));
     }

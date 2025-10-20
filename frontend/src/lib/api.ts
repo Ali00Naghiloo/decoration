@@ -1,7 +1,6 @@
 import axios, { AxiosRequestConfig } from "axios";
 
-const DEFAULT_API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function apiFetch(
   endpoint: string,
@@ -10,7 +9,7 @@ export async function apiFetch(
 ): Promise<{ data: unknown; status: number; ok: boolean }> {
   const url = endpoint.startsWith("http")
     ? endpoint
-    : `${baseUrl || DEFAULT_API_BASE}${
+    : `${baseUrl || API_BASE_URL}${
         endpoint.startsWith("/") ? endpoint : "/" + endpoint
       }`;
   try {
