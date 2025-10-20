@@ -15,6 +15,35 @@ const getFileUrl = (_req: Request, filename: string) => {
   return `${FILE_SERVER_BASE_URL}/uploads/${filename}`;
 };
 
+// Helper function to normalize existing URLs (fix legacy URLs)
+const normalizeUrl = (url: string | undefined): string | undefined => {
+  if (!url) return undefined;
+
+  // If it's already correct, return as is
+  if (url.includes("/api/uploads/")) return url;
+
+  // Fix legacy URLs that might be missing /api
+  if (url.startsWith("https://api.rokhnegar.art/uploads/")) {
+    return url.replace(
+      "https://api.rokhnegar.art/uploads/",
+      "https://api.rokhnegar.art/api/uploads/"
+    );
+  }
+
+  // If it's a relative path, build full URL
+  if (!url.startsWith("http")) {
+    return `${FILE_SERVER_BASE_URL}/uploads/${url}`;
+  }
+
+  return url;
+};
+
+// Helper function to normalize array of URLs
+const normalizeUrls = (urls: string[] | undefined): string[] => {
+  if (!urls || !Array.isArray(urls)) return [];
+  return urls.map((url) => normalizeUrl(url)).filter(Boolean) as string[];
+};
+
 // --- CREATE ---
 export const createPortfolioItem = async (
   req: Request & { files?: any },
@@ -86,11 +115,17 @@ export const getPortfolioItemById = async (
     if (!item) {
       return next(new AppError("No item found with that ID.", 404));
     }
+    const normalizedItem = {
+      ...item.toObject(),
+      cover: normalizeUrl(item.cover),
+      images: normalizeUrls(item.images),
+      videoUrl: normalizeUrl(item.videoUrl),
+      mediaUrl: normalizeUrl(item.mediaUrl),
+    };
+
     res.status(200).json({
       status: "success",
-      data: {
-        ...item.toObject(),
-      },
+      data: normalizedItem,
     });
   } catch (error) {
     next(error);
@@ -110,12 +145,17 @@ export const getAllPortfolioItems = async (
     // اگر کوئری all=true باشد، همه نمونه‌کارها را برگردان (برای پنل)
     const filter = req.query.all === "true" ? {} : { status: 1 };
     const items = await Sample.find(filter);
-    // ارسال آرایه عکس‌ها و کاور
-    const itemsWithCover = items.map((item: any) => ({
-      ...item.toObject(),
-      cover: item.cover || (item.images && item.images[0]) || undefined,
-      images: item.images || [],
-    }));
+    // ارسال آرایه عکس‌ها و کاور با نرمال‌سازی URL ها
+    const itemsWithCover = items.map((item: any) => {
+      const obj = item.toObject();
+      return {
+        ...obj,
+        cover: normalizeUrl(obj.cover || (obj.images && obj.images[0])),
+        images: normalizeUrls(obj.images),
+        videoUrl: normalizeUrl(obj.videoUrl),
+        mediaUrl: normalizeUrl(obj.mediaUrl),
+      };
+    });
     res.status(200).json({
       status: "success",
       data: itemsWithCover,

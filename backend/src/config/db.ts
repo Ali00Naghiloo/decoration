@@ -2,7 +2,7 @@
 export const FILE_SERVER_BASE_URL =
   process.env.FILE_BASE_URL && process.env.FILE_BASE_URL !== "undefined"
     ? process.env.FILE_BASE_URL
-    : "http://localhost:5000/api";
+    : "https://api.rokhnegar.art/api";
 import mongoose from "mongoose";
 
 export const connectDB = async () => {

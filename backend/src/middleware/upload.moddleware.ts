@@ -3,8 +3,11 @@ import path from "path";
 import fs from "fs";
 import { AppError } from "../utils/AppError";
 
-// Define the destination for our uploads
-const uploadDir = path.join(__dirname, "../uploads");
+// Define the destination for our uploads - use absolute path for better compatibility
+const uploadDir =
+  process.env.NODE_ENV === "production"
+    ? path.join(process.cwd(), "uploads")
+    : path.join(__dirname, "../uploads");
 
 // Ensure the upload directory exists
 if (!fs.existsSync(uploadDir)) {
