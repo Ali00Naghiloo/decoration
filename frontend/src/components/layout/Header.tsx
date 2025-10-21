@@ -6,8 +6,10 @@ import { Button } from "../ui/button";
 import { Globe, LogIn, Menu, Phone } from "lucide-react";
 import LanguageSwitcher from "../sections/LanguageSwitcher";
 import { useTranslation } from "@/src/hooks/useTranslation";
+import { useState } from "react";
 
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
 
   return (
@@ -65,9 +67,29 @@ export default function Header() {
           <Button className="ml-auto bg-[#F9F9F9]">
             <LogIn color="#000" />
           </Button>
-          <Button className="ml-auto bg-[#F9F9F9]">
+          <Button
+            className="ml-auto bg-[#F9F9F9]"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
             <Menu color="#000" />
           </Button>
+          {menuOpen && (
+            <div className="fixed inset-0 bg-[rgb(0,0,0,0.5)] bg-opacity-30 flex justify-end z-50 transition-transform duration-300 ease-in-out">
+              <div className="bg-white w-3/4 max-w-sm h-full p-6 pt-20 flex flex-col gap-4 shadow-lg relative">
+                <button
+                  className="absolute top-4 right-4 text-2xl text-gray-600"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  ×
+                </button>
+                <LanguageSwitcher />
+                <Button variant={"link"}>{t("learn")}</Button>
+                <Button variant={"link"}>{t("about-me")}</Button>
+                <Button variant={"link"}>{t("portfolio")}</Button>
+                <Button variant={"link"}>{t("blog")}</Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -1,23 +1,14 @@
 "use client";
 
-import "plyr-react/plyr.css";
-import dynamic from "next/dynamic";
+import "plyr-react/plyr.css"; // این را می‌توان حذف کرد اگر فایل CSS بالا import شده باشد
 import MediaSlider, { MediaItem } from "@/src/components/forms/MediaSlider";
 import { Button } from "../ui/button";
 import { Link } from "@/src/i18n/navigation";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import Image from "next/image";
+import { Video } from "@/src/components/ui/video"; // کامپوننت جدید را import کنید
 
-const Plyr = dynamic(() => import("plyr-react"), { ssr: false });
-
-// Helper to get video type from url
-function getVideoType(url?: string) {
-  if (!url) return "video/mp4";
-  if (url.endsWith(".webm")) return "video/webm";
-  if (url.endsWith(".ogg") || url.endsWith(".ogv")) return "video/ogg";
-  return "video/mp4";
-}
 export interface PortfolioItem {
   _id: string;
   title: string;
@@ -70,41 +61,27 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
               </Button>
             </Link>
           </div>
-          <h1 className="text-4xl g:text-6xl">{item.title}</h1>
+          <h1 className="text-4xl g:text-6xl text-center">{item.title}</h1>
           <div></div>
         </div>
-        <div className="w-3/4 lg:w-6/10 h-1/2 min-h-[300px] px-5 lg:px-10">
+        <div className="w-full lg:w-6/10 h-1/2 min-h-[300px] px-5 lg:px-10">
           <MediaSlider media={media} />
         </div>
       </div>
 
-      <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5">
-        <div className="w-full">
-          <div className="w-full">
-            {item.videoUrl}
-            <div className="relative my-10">
-              {/* 16:9 aspect ratio */}
-              <Plyr
-                source={{
-                  type: "video",
-                  sources: [
-                    {
-                      src: item.videoUrl,
-                      type: "video",
-                      provider: "vimeo",
-                    },
-                  ],
-                  poster: item.cover,
-                }}
-                options={{
-                  autoplay: true,
-                  loop: { active: true },
-                }}
-                className="absolute inset-0 w-full h-full object-cover rounded-lg bg-black"
-              />
-            </div>
+      <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5 py-10">
+        {/* بخش ویدیو پلیر */}
+        {item.videoUrl && (
+          <div className="w-full h-fit my-10">
+            <Video
+              src={item.videoUrl}
+              poster={item.cover}
+              autoPlay
+              muted
+              loop
+            />
           </div>
-        </div>
+        )}
 
         <div className="w-full rounded-xl bg-[#F8F9FF] border border-[rgb(0,111,255,0.1)] lg:p-10 p-3 flex flex-col gap-4">
           <div className="bg-[rgba(0,111,255,0.4)] px-3 p-2 text-[#006FFF] rounded-full w-fit">
@@ -126,7 +103,6 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
 
         <div className="mb-48 flex gap-4 items-center">
           <span className="mr-4">{t("share")}</span>
-
           {socials.map((social) => (
             <a
               key={social.name}

@@ -11,6 +11,7 @@ interface PortfolioItem {
   _id: string;
   title: string;
   description?: string;
+  des?: string;
   category?: string;
   cover?: string;
 }
@@ -22,7 +23,6 @@ export default function Samples() {
 
   useEffect(() => {
     apiFetch("/samples").then(({ data }) => {
-      console.log(data);
       if (Array.isArray(data)) {
         setSamples(data);
       }
@@ -66,6 +66,7 @@ export default function Samples() {
                 category={sm.category || ""}
                 cover={sm.cover}
                 description={sm.description}
+                des={sm.des}
               />
             </Link>
           ))}

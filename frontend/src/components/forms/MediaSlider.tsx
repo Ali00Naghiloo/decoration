@@ -2,25 +2,22 @@
 
 "use client";
 
-// مرحله ۱: ایمپورت‌های مستقیم، دقیقا مانند نمونه کد کاری شما
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import type { NavigationOptions } from "swiper/types";
 import Image from "next/image";
-
-// مرحله ۲: ایمپورت مستقیم CSS ها، که ثابت شد کار می‌کند
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import React from "react";
+import { Video } from "../ui/video";
 
 export interface MediaItem {
   type: "image" | "video";
   url: string;
 }
 
-// ما دیگر از next/dynamic استفاده نمی‌کنیم
 export default function MediaSlider({ media }: { media: MediaItem[] }) {
   const [loading, setLoading] = React.useState(true);
   // Swiper ref for navigation control
@@ -62,16 +59,17 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
 
   const video = media.find((m) => m.type === "video");
   const images = media.filter((m) => m.type === "image");
+  const cover = media.find((m) => m.type === "image");
   const slides = video ? [video, ...images] : images;
 
   return (
     <>
       <Swiper
         style={{ width: "100%", height: "100%" }}
-        modules={[Navigation, Pagination]}
+        modules={[Navigation, Pagination, Autoplay]}
         navigation={true}
         pagination={{ clickable: true }}
-        autoplay={{ delay: 3500, disableOnInteraction: false }}
+        autoplay={{ delay: 3500, disableOnInteraction: true }}
         spaceBetween={16}
         slidesPerView={1}
         className="swiper-container rounded-4xl"
@@ -83,15 +81,7 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
               style={{ position: "relative", width: "100%", height: "100%" }}
             >
               {item.type === "video" ? (
-                <video
-                  src={item.url}
-                  controls
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                  }}
-                />
+                <Video src={item.url} poster={cover?.url} autoPlay muted loop />
               ) : (
                 <Image
                   src={item.url}
