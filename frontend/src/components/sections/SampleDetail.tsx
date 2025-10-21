@@ -1,5 +1,7 @@
 "use client";
 
+import "plyr-react/plyr.css";
+import dynamic from "next/dynamic";
 import MediaSlider, { MediaItem } from "@/src/components/forms/MediaSlider";
 import { Button } from "../ui/button";
 import { Link } from "@/src/i18n/navigation";
@@ -7,6 +9,15 @@ import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import Image from "next/image";
 
+const Plyr = dynamic(() => import("plyr-react"), { ssr: false });
+
+// Helper to get video type from url
+function getVideoType(url?: string) {
+  if (!url) return "video/mp4";
+  if (url.endsWith(".webm")) return "video/webm";
+  if (url.endsWith(".ogg") || url.endsWith(".ogv")) return "video/ogg";
+  return "video/mp4";
+}
 export interface PortfolioItem {
   _id: string;
   title: string;
@@ -26,7 +37,6 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
     media.push(...item.images.map((url) => ({ type: "image" as const, url })));
   else if (item.cover) media.push({ type: "image", url: item.cover });
   const { t } = useTranslation();
-  console.log(item);
 
   const socials = [
     {
@@ -50,7 +60,7 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
   return (
     <div className="flex flex-col">
       {/* start section */}
-      <div className="w-full flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-0 lg:h-[90vh]">
+      <div className="w-full flex flex-col lg:flex-row justify-between items-center lg:h-[90vh]">
         <div className="w-full lg:w-4/10 h-full flex flex-col justify-around px-8 gap-10">
           <div className="w-fit">
             <Link href={"/"}>
@@ -63,32 +73,37 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
           <h1 className="text-4xl g:text-6xl">{item.title}</h1>
           <div></div>
         </div>
-        <div className="w-6/10 h-1/2 px-5 lg:px-10">
+        <div className="w-3/4 lg:w-6/10 h-1/2 min-h-[300px] px-5 lg:px-10">
           <MediaSlider media={media} />
         </div>
       </div>
 
       <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5">
         <div className="w-full">
-          {
-            <div className="w-full">
-              <div className="relative pt-[56.25%] my-10">
-                {" "}
-                {/* 16:9 aspect ratio */}
-                <video
-                  src={item.videoUrl}
-                  poster={item.cover}
-                  controls
-                  playsInline
-                  loop
-                  autoPlay
-                  preload="metadata"
-                  className="absolute inset-0 w-full h-full object-cover rounded-lg bg-black"
-                  aria-label={item.title ?? "video"}
-                />
-              </div>
+          <div className="w-full">
+            {item.videoUrl}
+            <div className="relative my-10">
+              {/* 16:9 aspect ratio */}
+              <Plyr
+                source={{
+                  type: "video",
+                  sources: [
+                    {
+                      src: item.videoUrl,
+                      type: "video",
+                      provider: "vimeo",
+                    },
+                  ],
+                  poster: item.cover,
+                }}
+                options={{
+                  autoplay: true,
+                  loop: { active: true },
+                }}
+                className="absolute inset-0 w-full h-full object-cover rounded-lg bg-black"
+              />
             </div>
-          }
+          </div>
         </div>
 
         <div className="w-full rounded-xl bg-[#F8F9FF] border border-[rgb(0,111,255,0.1)] lg:p-10 p-3 flex flex-col gap-4">
@@ -100,10 +115,6 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
             already doing and made it 10x more effective — no retraining, no
             tool switching, just more wins.”
           </span>
-          <div className="flex flex-col self-end">
-            <span className="text-xl font-bold">Richard Tanaka</span>
-            <span>Director of Sales Enablement, Hitachi North America</span>
-          </div>
         </div>
 
         {item.description && (
