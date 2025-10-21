@@ -143,3 +143,52 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+blockquote {
+  background: #f8f9ff !important;
+  padding: 35px !important;
+  border: 1px solid rgb(0, 111, 255, 0.1) !important;
+  border-radius: 10px !important;
+  color: #000 !important;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.animate-slide-out {
+  animation: slide-out 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}

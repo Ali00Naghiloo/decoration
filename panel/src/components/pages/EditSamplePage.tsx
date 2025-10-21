@@ -44,7 +44,7 @@ export default function EditSamplePage() {
         setVideoUrl(null);
       } catch (err) {
         const error = err as Error;
-        toast.error(error.message || "خطا در دریافت اطلاعات نمونه");
+        toast.error(error.message || "خطا در دریافت اطلاعات نمونه‌کار");
       }
     };
     if (id) fetchSample();
@@ -102,11 +102,11 @@ export default function EditSamplePage() {
       };
 
       await updateSample(id, data);
-      toast.success("نمونه با موفقیت ویرایش شد!");
+      toast.success("نمونه‌کار با موفقیت ویرایش شد!");
       router.push("/dashboard/samples");
     } catch (err) {
       const error = err as Error;
-      toast.error(error.message || "خطا در ویرایش نمونه");
+      toast.error(error.message || "خطا در ویرایش نمونه‌کار");
     } finally {
       setLoading(false);
     }
@@ -174,7 +174,7 @@ export default function EditSamplePage() {
                             prev.map((item, i) => (i === idx ? res.url : item))
                           );
                         } catch (err) {
-                          toast.error("جایگزینی تصویر ناموفق بود");
+                          toast.error("جایگزینی تصویر انجام نشد");
                         }
                       }
                     }}
@@ -217,7 +217,7 @@ export default function EditSamplePage() {
                       const res = await uploadFile(e.target.files[0]);
                       setVideoUrl(res.url);
                     } catch (err) {
-                      toast.error("جایگزینی ویدیو ناموفق بود");
+                      toast.error("جایگزینی ویدیو انجام نشد");
                     }
                   }
                 }}
@@ -251,7 +251,7 @@ export default function EditSamplePage() {
                         const res = await uploadFile(file);
                         return res.url;
                       } catch (err) {
-                        toast.error("آپلود تصویر ناموفق بود");
+                        toast.error("آپلود تصویر انجام نشد");
                         console.error("Image upload error:", err);
                         return null;
                       }
@@ -261,7 +261,7 @@ export default function EditSamplePage() {
                     ).filter(Boolean) as string[];
                     setImages((prev) => [...prev, ...uploadedUrls]);
                   } catch (err) {
-                    toast.error("خطا در import یا آپلود تصویر");
+                    toast.error("خطا در بارگذاری یا آپلود تصویر");
                     console.error("Upload handler error:", err);
                   }
                 }
@@ -294,7 +294,7 @@ export default function EditSamplePage() {
                     const res = await uploadFile(file);
                     setVideoUrl(res.url);
                   } catch (err) {
-                    toast.error("آپلود ویدیو ناموفق بود");
+                    toast.error("آپلود ویدیو انجام نشد");
                     console.error("Video upload error:", err);
                   }
                 }

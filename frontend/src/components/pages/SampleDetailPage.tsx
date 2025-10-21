@@ -1,21 +1,22 @@
 "use client";
 
+import React from "react";
 import Header from "@/src/components/layout/Header";
 import Footer from "@/src/components/layout/Footer";
 import SampleDetail, {
   PortfolioItem,
 } from "@/src/components/sections/SampleDetail";
 import { apiFetch } from "@/src/lib/api";
+import { useTranslation } from "@/src/hooks/useTranslation";
 
 interface Props {
   sampleId: string;
 }
 
-import React from "react";
-
 export default function SampleDetailPage({ sampleId }: Props) {
   const [item, setItem] = React.useState<PortfolioItem | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     async function fetchData() {
@@ -27,7 +28,11 @@ export default function SampleDetailPage({ sampleId }: Props) {
   }, [sampleId]);
 
   if (loading) {
-    return <div>Loading portfolio...</div>;
+    return (
+      <div className="w-screen h-screen flex justify-center items-center">
+        {t("loading-sample")}
+      </div>
+    );
   }
 
   return (

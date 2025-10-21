@@ -14,6 +14,7 @@ export interface PortfolioItem {
   title: string;
   cover?: string;
   description?: string;
+  des?: string;
   images?: string[];
   mediaUrl?: string;
   mediaType?: string[];
@@ -72,7 +73,7 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
       <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5 py-10">
         {/* بخش ویدیو پلیر */}
         {item.videoUrl && (
-          <div className="w-full h-fit my-10">
+          <div className="w-full h-fit my-10 rounded-4xl">
             <Video
               src={item.videoUrl}
               poster={item.cover}
@@ -82,25 +83,12 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
             />
           </div>
         )}
-
-        <div className="w-full rounded-xl bg-[#F8F9FF] border border-[rgb(0,111,255,0.1)] lg:p-10 p-3 flex flex-col gap-4">
-          <div className="bg-[rgba(0,111,255,0.4)] px-3 p-2 text-[#006FFF] rounded-full w-fit">
-            {t("quote")}
-          </div>
-          <span className="text-2xl font-bold">
-            “We didn’t expect results this fast. TitanX took what we were
-            already doing and made it 10x more effective — no retraining, no
-            tool switching, just more wins.”
-          </span>
-        </div>
-
         {item.description && (
           <div
             dangerouslySetInnerHTML={{ __html: item.description }}
             className="text-[18px] text-[#444] mb-6 p-4 rounded"
           />
         )}
-
         <div className="mb-48 flex gap-4 items-center">
           <span className="mr-4">{t("share")}</span>
           {socials.map((social) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import Lenis from "@studio-freight/lenis";
+import Lenis from "lenis";
 
 export default function SmoothScroller({ children }: { children: ReactNode }) {
   const easeInOutCubic = (t: number) => {
@@ -11,8 +11,6 @@ export default function SmoothScroller({ children }: { children: ReactNode }) {
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.08,
-      duration: 10000,
-      easing: easeInOutCubic,
     });
 
     function raf(time: number) {
@@ -21,6 +19,12 @@ export default function SmoothScroller({ children }: { children: ReactNode }) {
     }
 
     const rafId = requestAnimationFrame(raf);
+
+    // Scroll to top with custom easing after mount
+    lenis.scrollTo(0, {
+      duration: 1.2,
+      easing: easeInOutCubic, // quadratic ease
+    });
 
     return () => {
       cancelAnimationFrame(rafId);

@@ -184,6 +184,12 @@ export const updatePortfolioItem = async (
     if (typeof req.body.des !== "undefined") item.des = req.body.des;
 
     // به‌روزرسانی عکس‌ها
+    if (req.body.images && Array.isArray(req.body.images)) {
+      item.images = req.body.images;
+      item.cover = req.body.images[0];
+      item.mediaUrl = req.body.images[0];
+      item.mediaType = "image";
+    }
     if (req.files && req.files["images"]) {
       const images = req.files["images"].map((file: any) =>
         getFileUrl(req, file.filename)
@@ -197,6 +203,10 @@ export const updatePortfolioItem = async (
     }
 
     // به‌روزرسانی ویدیو
+    if (req.body.videoUrl && typeof req.body.videoUrl === "string") {
+      item.videoUrl = req.body.videoUrl;
+      item.mediaType = "video";
+    }
     if (req.files && req.files["video"] && req.files["video"][0]) {
       const videoUrl = getFileUrl(req, req.files["video"][0].filename);
       item.videoUrl = videoUrl;
@@ -222,15 +232,32 @@ export const deletePortfolioItem = async (
       return next(new AppError("No item found with that ID.", 404));
     }
 
-    // Delete the associated file from the server
-    if (item.mediaUrl) {
-      const filename = item.mediaUrl.split("/uploads/")[1];
+    // حذف تمام فایل‌های مرتبط با نمونه‌کار
+    const deleteFile = (url: string | undefined) => {
+      if (!url) return;
+      const filename = url.split("/uploads/")[1];
       if (filename) {
         const filePath = path.join("uploads", filename);
         fs.unlink(filePath, (err) => {
-          if (err) console.error("Error deleting file:", err);
+          if (err) console.error("خطا در حذف فایل:", err);
         });
       }
+    };
+
+    // حذف تصاویر
+    if (item.images && Array.isArray(item.images)) {
+      item.images.forEach((imgUrl: string) => deleteFile(imgUrl));
+    }
+    // حذف ویدیو
+    if (item.videoUrl) {
+      deleteFile(item.videoUrl);
+    }
+    // حذف کاور و مدیا
+    if (item.cover) {
+      deleteFile(item.cover);
+    }
+    if (item.mediaUrl) {
+      deleteFile(item.mediaUrl);
     }
 
     res.status(204).json({ status: "success", data: null });

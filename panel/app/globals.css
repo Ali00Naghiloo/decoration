@@ -159,3 +159,11 @@ body {
 .ck-content .font-family-satoshi {
   font-family: "Satoshi", sans-serif !important;
 }
+
+.ck-content blockquote {
+  background: #f8f9ff;
+  padding: 5px;
+  border: 1px solid rgb(0, 111, 255, 0.1);
+  border-radius: 10px;
+  color: #000;
+}

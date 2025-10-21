@@ -34,5 +34,6 @@
   "share": "Share",
   "quote": "Quote",
   "loading-samples": "Loading samples...",
-  "close": "Close"
+  "close": "Close",
+  "loading-sample": "Loading sample..."
 }

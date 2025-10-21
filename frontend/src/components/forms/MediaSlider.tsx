@@ -80,9 +80,7 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
             <div
               style={{ position: "relative", width: "100%", height: "100%" }}
             >
-              {item.type === "video" ? (
-                <Video src={item.url} poster={cover?.url} autoPlay muted loop />
-              ) : (
+              {item.type === "image" ? (
                 <Image
                   src={item.url}
                   alt={`media-${idx}`}
@@ -90,6 +88,8 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
                   style={{ objectFit: "cover" }}
                   sizes="(max-width: 768px) 100vw, 50vw, 33vw"
                 />
+              ) : (
+                <Video src={item.url} poster={cover?.url} autoPlay muted loop />
               )}
             </div>
           </SwiperSlide>

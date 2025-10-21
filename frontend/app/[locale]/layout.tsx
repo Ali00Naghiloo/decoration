@@ -1,8 +1,8 @@
 import "./globals.css";
-import { NextIntlClientProvider, useMessages } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import SmoothScroller from "../../src/components/layout/SmoothScroller";
 import { satoshiFont, yekanFont } from "../fonts";
-import { setRequestLocale } from "next-intl/server";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -25,15 +25,16 @@ export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "fa" }];
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-  params: { locale },
+  params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   setRequestLocale(locale);
-  const messages = useMessages();
+  const messages = await getMessages();
 
   return (
     <html lang={locale} dir={locale === "fa" ? "rtl" : "ltr"}>
@@ -42,8 +43,9 @@ export default function RootLayout({
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
       </head>
       <body
-        className={`${locale === "fa" && yekanFont.className}
-        } ${locale === "en" && satoshiFont.variable}`}
+        className={`${
+          locale === "fa" ? yekanFont.className : satoshiFont.variable
+        }`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <SmoothScroller>{children}</SmoothScroller>

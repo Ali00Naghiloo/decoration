@@ -6,10 +6,22 @@ import { Button } from "../ui/button";
 import { Globe, LogIn, Menu, Phone } from "lucide-react";
 import LanguageSwitcher from "../sections/LanguageSwitcher";
 import { useTranslation } from "@/src/hooks/useTranslation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Prevent body scroll when menu is open (mobile)
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
   const { t } = useTranslation();
 
   return (
@@ -74,19 +86,39 @@ export default function Header() {
             <Menu color="#000" />
           </Button>
           {menuOpen && (
-            <div className="fixed inset-0 bg-[rgb(0,0,0,0.5)] bg-opacity-30 flex justify-end z-50 transition-transform duration-300 ease-in-out">
-              <div className="bg-white w-3/4 max-w-sm h-full p-6 pt-20 flex flex-col gap-4 shadow-lg relative">
+            <div
+              className={`fixed inset-0 bg-[rgb(0,0,0,0.5)] bg-opacity-40 flex justify-end z-50 transition-all duration-300 ease-in-out ${
+                menuOpen ? "visible" : "invisible"
+              }`}
+            >
+              <div className="bg-white w-3/4 max-w-sm h-full p-6 pt-20 flex flex-col gap-6 shadow-lg relative animate-slide-in">
                 <button
-                  className="absolute top-4 right-4 text-2xl text-gray-600"
+                  className="absolute top-4 right-4 text-3xl text-gray-600 cursor-pointer"
                   onClick={() => setMenuOpen(false)}
+                  aria-label="بستن منو"
                 >
                   ×
                 </button>
                 <LanguageSwitcher />
-                <Button variant={"link"}>{t("learn")}</Button>
-                <Button variant={"link"}>{t("about-me")}</Button>
-                <Button variant={"link"}>{t("portfolio")}</Button>
-                <Button variant={"link"}>{t("blog")}</Button>
+                <Button variant={"link"} className="text-lg">
+                  {t("learn")}
+                </Button>
+                <Button variant={"link"} className="text-lg">
+                  {t("about-me")}
+                </Button>
+                <Button variant={"link"} className="text-lg">
+                  {t("portfolio")}
+                </Button>
+                <Button variant={"link"} className="text-lg">
+                  {t("blog")}
+                </Button>
+                <Button
+                  variant="default"
+                  className="mt-4 flex items-center justify-center gap-2"
+                >
+                  <Phone />
+                  {t("contact")}
+                </Button>
               </div>
             </div>
           )}
