@@ -167,3 +167,11 @@ body {
   border-radius: 10px;
   color: #000;
 }
+
+.ck-content img {
+  border-radius: 24px;
+  width: 100%;
+}
+.ck-content figure {
+  width: 100%;
+}

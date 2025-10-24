@@ -2,6 +2,7 @@
 
 "use client";
 
+import React, { useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import type { AxiosInstance } from "axios";
@@ -70,54 +71,69 @@ function MyCustomUploadAdapterPlugin(editor: any) {
 }
 
 export default function Editor({ value, onChange }: EditorProps) {
+  const [loading, setLoading] = useState(true);
+
   return (
-    <CKEditor
-      editor={ClassicEditor}
-      data={value || ""}
-      config={{
-        language: "fa",
-        extraPlugins: [MyCustomUploadAdapterPlugin],
-        toolbar: {
-          items: [
-            "heading",
-            "|",
-            "fontFamily",
-            "fontSize",
-            "fontColor",
-            "fontBackgroundColor",
-            "|",
-            "bold",
-            "italic",
-            "underline",
-            "strikethrough",
-            "|",
-            "alignment",
-            "|",
-            "numberedList",
-            "bulletedList",
-            "outdent",
-            "indent",
-            "|",
-            "link",
-            "uploadImage",
-            "blockQuote",
-            "insertTable",
-            "mediaEmbed",
-            "|",
-            "undo",
-            "redo",
-          ],
-        },
-        table: {
-          contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
-        },
-      }}
-      onReady={() => {
-        console.log("Editor is ready for LOCAL/BASE64 image upload.");
-      }}
-      onChange={(event, editor) => {
-        onChange(editor.getData());
-      }}
-    />
+    <div className="relative">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+          <span className="text-2xl font-bold text-gray-700 animate-pulse">
+            در حال بارگذاری ادیتور...
+          </span>
+        </div>
+      )}
+      <CKEditor
+        editor={ClassicEditor}
+        data={value || ""}
+        config={{
+          language: "fa",
+          extraPlugins: [MyCustomUploadAdapterPlugin],
+          toolbar: {
+            items: [
+              "heading",
+              "|",
+              "fontFamily",
+              "fontSize",
+              "fontColor",
+              "fontBackgroundColor",
+              "|",
+              "bold",
+              "italic",
+              "underline",
+              "strikethrough",
+              "|",
+              "alignment",
+              "|",
+              "numberedList",
+              "bulletedList",
+              "outdent",
+              "indent",
+              "|",
+              "link",
+              "uploadImage",
+              "blockQuote",
+              "insertTable",
+              "mediaEmbed",
+              "|",
+              "undo",
+              "redo",
+            ],
+          },
+          fontSize: {
+            options: [9, 11, 13, 15, 17, 19, 21, 23, 25, "default"],
+            supportAllValues: false,
+          },
+          table: {
+            contentToolbar: ["tableColumn", "tableRow", "mergeTableCells"],
+          },
+        }}
+        onReady={() => {
+          setLoading(false);
+        }}
+        onChange={(event, editor) => {
+          onChange(editor.getData());
+        }}
+      />
+    </div>
   );
 }

@@ -24,9 +24,9 @@ export interface PortfolioItem {
 
 export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
   const media: MediaItem[] = [];
-  if (item?.videoUrl) media.push({ type: "video", url: item?.videoUrl });
   if (item.images && item.images.length > 0)
     media.push(...item.images.map((url) => ({ type: "image" as const, url })));
+  if (item?.videoUrl) media.push({ type: "video", url: item?.videoUrl });
   else if (item.cover) media.push({ type: "image", url: item.cover });
   const { t } = useTranslation();
 
@@ -73,7 +73,7 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
       <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5 py-10">
         {/* بخش ویدیو پلیر */}
         {item.videoUrl && (
-          <div className="w-full h-fit my-10 rounded-4xl">
+          <div className="w-full h-fit my-10 rounded-3xl">
             <Video
               src={item.videoUrl}
               poster={item.cover}
@@ -86,7 +86,7 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
         {item.description && (
           <div
             dangerouslySetInnerHTML={{ __html: item.description }}
-            className="text-[18px] text-[#444] mb-6 p-4 rounded"
+            className="richtext text-[18px] text-[#444] mb-6 p-4 rounded"
           />
         )}
         <div className="mb-48 flex gap-4 items-center">

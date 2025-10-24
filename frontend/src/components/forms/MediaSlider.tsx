@@ -10,7 +10,7 @@ import Image from "next/image";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import React from "react";
+import React, { useState } from "react";
 import { Video } from "../ui/video";
 
 export interface MediaItem {
@@ -19,7 +19,9 @@ export interface MediaItem {
 }
 
 export default function MediaSlider({ media }: { media: MediaItem[] }) {
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImg, setModalImg] = useState<string | null>(null);
   // Swiper ref for navigation control
   const swiperRef = React.useRef<SwiperType | null>(null);
 
@@ -81,13 +83,19 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
               style={{ position: "relative", width: "100%", height: "100%" }}
             >
               {item.type === "image" ? (
-                <Image
-                  src={item.url}
-                  alt={`media-${idx}`}
-                  fill={true}
-                  style={{ objectFit: "cover" }}
-                  sizes="(max-width: 768px) 100vw, 50vw, 33vw"
-                />
+                <>
+                  <Image
+                    src={item.url}
+                    alt={`media-${idx}`}
+                    fill={true}
+                    style={{ objectFit: "cover", cursor: "pointer" }}
+                    sizes="(max-width: 768px) 100vw, 50vw, 33vw"
+                    onClick={() => {
+                      setModalImg(item.url);
+                      setModalOpen(true);
+                    }}
+                  />
+                </>
               ) : (
                 <Video src={item.url} poster={cover?.url} autoPlay muted loop />
               )}
@@ -95,6 +103,34 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {modalOpen && modalImg && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="relative max-w-3xl w-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-2 right-2 bg-white rounded-full p-2 shadow text-gray-700 hover:bg-gray-200"
+              onClick={() => setModalOpen(false)}
+              aria-label="بستن"
+            >
+              &#10005;
+            </button>
+            <Image
+              src={modalImg || ""}
+              alt="بزرگ شده"
+              width={800}
+              height={600}
+              className="max-h-[80vh] max-w-full rounded-lg shadow-lg"
+              style={{ objectFit: "contain" }}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

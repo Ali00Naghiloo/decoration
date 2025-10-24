@@ -60,8 +60,7 @@ export function Video(props: VideoProps) {
   return (
     // این div والد استایل‌های کلی و نسبت ابعاد را مدیریت می‌کند
     <div
-      className="aspect-video w-full rounded-4xl overflow-hidden"
-      // برای تغییر رنگ اصلی پلیر (مثلاً نارنجی، آبی و ...)
+      className="aspect-video w-full rounded-3xl overflow-hidden"
       style={{ "--plyr-color-main": "#006FFF" } as CSSProperties}
     >
       <video
