@@ -8,7 +8,7 @@ export default function PortfolioPage() {
   return (
     <>
       <Header />
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[1500px] mx-auto">
         <HeroSection />
         <PortfolioSamples />
       </div>

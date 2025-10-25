@@ -32,19 +32,6 @@ export default function Samples() {
 
   return (
     <div id="samples" className="flex flex-col items-center gap-5 py-10">
-      <Badge
-        className={
-          "bg-[rgba(0,111,255,0.04)] text-[#006FFF] px-4 py-2 rounded-[100px]"
-        }
-      >
-        {t("customer-stories")}
-      </Badge>
-
-      <div className="font-bold text-4xl xl:text-6xl">
-        {t("all-customer")}{" "}
-        <span className="text-[#006FFF]">{t("stories")}</span>
-      </div>
-
       <div className="w-full flex gap-8 flex-wrap py-5 lg:p-20">
         {loading && (
           <div className="w-full flex justify-center text-gray-400">

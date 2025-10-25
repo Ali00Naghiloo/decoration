@@ -21,7 +21,7 @@ export default function SampleCard({
   const { t } = useTranslation();
 
   return (
-    <div className="w-[290px] xl:w-[420px] h-[385px] xl:h-[490px] flex flex-col gap-6 rounded-3xl p-4 bg-[#F9F9F9] shadow">
+    <div className="w-[290px] xl:w-[420px] h-[385px] xl:h-[490px] flex flex-col items-start gap-6 rounded-3xl p-4 bg-[#F9F9F9] shadow">
       {cover ? (
         <Image
           src={cover}
@@ -40,7 +40,7 @@ export default function SampleCard({
         <div className="text-lg text-[#006FFF] mt-2">{category}</div>
         {description && (
           <div className="text-gray-500 text-[1em] mt-2 line-clamp-2">
-            {des && des.length > 50 ? `${des.slice(0, 50)}...` : des}
+            {des && des.length > 50 ? `${des.slice(0, 70)}...` : des}
           </div>
         )}
         <span className="flex items-center underline mt-auto gap-2 p-2 text-blue-600 cursor-pointer">

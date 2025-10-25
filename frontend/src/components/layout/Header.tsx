@@ -3,13 +3,21 @@
 import React from "react";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { Globe, LogIn, Menu, Phone } from "lucide-react";
+import { LogIn, Menu, Phone } from "lucide-react";
 import LanguageSwitcher from "../sections/LanguageSwitcher";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const headerLinks: { href: string; key: string }[] = [
+    { href: "/learn", key: "learn" },
+    { href: "/about-me", key: "about-me" },
+    { href: "/samples", key: "portfolio" },
+    { href: "/blog", key: "blog" },
+  ];
 
   // Prevent body scroll when menu is open (mobile)
   useEffect(() => {
@@ -27,27 +35,24 @@ export default function Header() {
   return (
     <>
       <div className="hidden w-full xl:flex justify-between p-6 h-[10vh] bg-white z-10 sticky top-0">
-        <Image
-          src="/logo.svg"
-          alt={t("logoAlt")}
-          width={52}
-          height={52}
-          className="!text-[#006FFF]"
-        />
+        <Link href={"/"} className="cursor-pointer">
+          <Image
+            src="/logo.svg"
+            alt={t("logoAlt")}
+            width={52}
+            height={52}
+            className="!text-[#006FFF]"
+          />
+        </Link>
 
         <div className="hidden xl:flex justify-center gap-10 absolute top-0 left-1/2 transform -translate-x-[50%] h-full items-center">
-          <Button variant={"link"} className="">
-            {t("learn")}
-          </Button>
-          <Button variant={"link"} className="">
-            {t("about-me")}
-          </Button>
-          <Button variant={"link"} className="">
-            {t("portfolio")}
-          </Button>
-          <Button variant={"link"} className="">
-            {t("blog")}
-          </Button>
+          {headerLinks.map((link) => (
+            <Link href={link.href} key={link.href} className="">
+              <Button variant={"link"} className="text-lg">
+                {t(link.key)}
+              </Button>
+            </Link>
+          ))}
         </div>
 
         <div className="flex gap-4 items-center">
@@ -100,18 +105,13 @@ export default function Header() {
                   ×
                 </button>
                 <LanguageSwitcher />
-                <Button variant={"link"} className="text-lg">
-                  {t("learn")}
-                </Button>
-                <Button variant={"link"} className="text-lg">
-                  {t("about-me")}
-                </Button>
-                <Button variant={"link"} className="text-lg">
-                  {t("portfolio")}
-                </Button>
-                <Button variant={"link"} className="text-lg">
-                  {t("blog")}
-                </Button>
+                {headerLinks.map((link) => (
+                  <Link href={link.href} key={link.href} className="">
+                    <Button variant={"link"} className="text-lg">
+                      {t(link.key)}
+                    </Button>
+                  </Link>
+                ))}
                 <Button
                   variant="default"
                   className="mt-4 flex items-center justify-center gap-2"
