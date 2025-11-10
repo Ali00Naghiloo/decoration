@@ -7,7 +7,11 @@ export interface Sample {
   status?: number; // وضعیت نمایش
   des?: string; // توضیح خلاصه
   images?: string[]; // Multiple images
-  video?: string | null; // Video file
+  cover?: string | null;
+  videoUrl?: string | null; // Video URL (backend uses videoUrl)
+  mediaUrl?: string | null;
+  mediaType?: string[]; // ["image","video"]
+  lang?: "fa" | "en"; // language of the sample
   createdAt: string; // Mongoose timestamps are strings in JSON
   updatedAt: string;
 }

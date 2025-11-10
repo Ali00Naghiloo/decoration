@@ -4,14 +4,15 @@ import slugify from "slugify";
 export interface ISample extends Document {
   title: string;
   slug: string;
-  description: string; // Will store sanitized HTML
+  description: string; // Will store sanitized HTML (may include inline style/lang/dir wrapper)
   images?: string[]; // آرایه عکس‌ها
   cover?: string; // عکس کاور
   videoUrl?: string; // آدرس ویدیو
   mediaUrl?: string;
-  mediaType?: "image" | "video";
+  mediaType?: string[]; // ["image","video"]
   status?: number; // 1: نمایش داده شود، 0: نمایش داده نشود
   des?: string; // توضیح خلاصه برای کارت
+  lang?: "fa" | "en"; // زبان محتوا — برای تعیین جهت و فونت در فرانت و پنل
 }
 
 const sampleSchema = new Schema<ISample>(
@@ -26,6 +27,7 @@ const sampleSchema = new Schema<ISample>(
     mediaType: [{ type: String, enum: ["image", "video"] }],
     status: { type: Number, default: 1 }, // 1: نمایش داده شود، 0: نمایش داده نشود
     des: { type: String, default: "" }, // توضیح خلاصه برای کارت
+    lang: { type: String, enum: ["fa", "en"], default: "fa" }, // زبان محتوا
   },
   { timestamps: true }
 ); // Automatically adds createdAt and updatedAt

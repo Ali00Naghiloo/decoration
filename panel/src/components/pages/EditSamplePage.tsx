@@ -22,6 +22,7 @@ export default function EditSamplePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [des, setDes] = useState(""); // توضیح خلاصه
+  const [lang, setLang] = useState<"fa" | "en">("fa"); // زبان نمونه‌کار
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -34,6 +35,7 @@ export default function EditSamplePage() {
         setTitle(data.title);
         setDescription(data.description);
         setDes(data.des || "");
+        setLang((data as any).lang || "fa");
 
         if (Array.isArray(data.images)) {
           setImages(data.images);
@@ -91,12 +93,14 @@ export default function EditSamplePage() {
         title: string;
         description: string;
         des: string;
+        lang?: "fa" | "en";
         images?: string[];
         videoUrl?: string;
       } = {
         title,
         description,
         des,
+        lang,
         images: uploadedImages,
         videoUrl: videoUrlToSend,
       };
@@ -122,6 +126,19 @@ export default function EditSamplePage() {
           onChange={(e) => setTitle(e.target.value)}
           required
         />
+        <div>
+          <label className="block mb-1 font-semibold">
+            زبان نمونه‌کار (lang)
+          </label>
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as "fa" | "en")}
+            className="w-full border rounded px-3 py-2 mb-3"
+          >
+            <option value="fa">فارسی (fa)</option>
+            <option value="en">English (en)</option>
+          </select>
+        </div>
         <Input
           placeholder="توضیح خلاصه (des)"
           value={des}

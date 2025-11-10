@@ -51,12 +51,22 @@ export const createPortfolioItem = async (
   next: NextFunction
 ) => {
   try {
-    const { title, description, status, des } = req.body;
+    const { title, description, status, des, lang } = req.body;
     if (!title || !description) {
       return next(new AppError("Title and description are required.", 400));
     }
 
-    const sanitizedDescription = purify.sanitize(description);
+    // Validate lang and default to 'fa' when not provided or invalid
+    const normalizedLang = lang === "en" ? "en" : "fa";
+
+    // Sanitize inner HTML, then wrap with a lightweight container that records language & direction.
+    // Allow style/class/lang/dir attributes so editor font selections survive sanitization.
+    const sanitizedInner = purify.sanitize(description, {
+      ADD_ATTR: ["style", "class", "lang", "dir"],
+    } as any);
+    const descriptionToSave = `<div lang="${normalizedLang}" dir="${
+      normalizedLang === "fa" ? "rtl" : "ltr"
+    }" class="sample-content">${sanitizedInner}</div>`;
 
     // ذخیره چند عکس و انتخاب کاور
     let images: string[] = [];
@@ -78,13 +88,15 @@ export const createPortfolioItem = async (
     }
 
     // تعیین نوع مدیا بر اساس وجود تصاویر و ویدیو
-    const mediaTypeArr = [];
+    const mediaTypeArr: string[] = [];
     if (images.length > 0) mediaTypeArr.push("image");
     if (videoUrl) mediaTypeArr.push("video");
 
+    // normalizedLang already determined earlier; create item using descriptionToSave
     const newItem = await Sample.create({
       title,
-      description: sanitizedDescription,
+      // store wrapped HTML (includes lang/dir)
+      description: descriptionToSave,
       images,
       cover,
       videoUrl,
@@ -92,6 +104,7 @@ export const createPortfolioItem = async (
       mediaType: mediaTypeArr,
       status: typeof status !== "undefined" ? status : 1,
       des: des || "",
+      lang: normalizedLang,
     });
 
     res.status(201).json({ status: "success", data: newItem });
@@ -178,17 +191,32 @@ export const updatePortfolioItem = async (
     }
 
     if (req.body.title) item.title = req.body.title;
-    if (req.body.description)
-      item.description = purify.sanitize(req.body.description);
+    if (req.body.description) {
+      // sanitize inner HTML then wrap with lang/dir using the item's lang (or provided lang)
+      const inner = purify.sanitize(req.body.description, {
+        ADD_ATTR: ["style", "class", "lang", "dir"],
+      } as any);
+      const langForWrap =
+        (item.lang as string) || (req.body.lang as string) || "fa";
+      item.description = `<div lang="${langForWrap}" dir="${
+        langForWrap === "fa" ? "rtl" : "ltr"
+      }" class="sample-content">${inner}</div>`;
+    }
     if (typeof req.body.status !== "undefined") item.status = req.body.status;
     if (typeof req.body.des !== "undefined") item.des = req.body.des;
+
+    // Update language if provided and valid
+    if (typeof req.body.lang !== "undefined") {
+      const langVal = req.body.lang === "en" ? "en" : "fa";
+      item.lang = langVal;
+    }
 
     // به‌روزرسانی عکس‌ها
     if (req.body.images && Array.isArray(req.body.images)) {
       item.images = req.body.images;
       item.cover = req.body.images[0];
       item.mediaUrl = req.body.images[0];
-      item.mediaType = "image";
+      item.mediaType = ["image"];
     }
     if (req.files && req.files["images"]) {
       const images = req.files["images"].map((file: any) =>
@@ -198,19 +226,19 @@ export const updatePortfolioItem = async (
         item.images = images;
         item.cover = images[0];
         item.mediaUrl = images[0];
-        item.mediaType = "image";
+        item.mediaType = ["image"];
       }
     }
 
     // به‌روزرسانی ویدیو
     if (req.body.videoUrl && typeof req.body.videoUrl === "string") {
       item.videoUrl = req.body.videoUrl;
-      item.mediaType = "video";
+      item.mediaType = ["video"];
     }
     if (req.files && req.files["video"] && req.files["video"][0]) {
       const videoUrl = getFileUrl(req, req.files["video"][0].filename);
       item.videoUrl = videoUrl;
-      item.mediaType = "video";
+      item.mediaType = ["video"];
     }
 
     const updatedItem = await item.save();

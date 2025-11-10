@@ -12,11 +12,11 @@ import Link from "next/link";
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const headerLinks: { href: string; key: string }[] = [
-    { href: "/learn", key: "learn" },
-    { href: "/about-me", key: "about-me" },
-    { href: "/samples", key: "portfolio" },
-    { href: "/blog", key: "blog" },
+  const headerLinks: { href: string; key: string; disabled?: boolean }[] = [
+    { href: "/learn", key: "learn", disabled: true },
+    { href: "/about-me", key: "about-me", disabled: true },
+    { href: "/samples", key: "portfolio", disabled: false },
+    { href: "/blog", key: "blog", disabled: false },
   ];
 
   // Prevent body scroll when menu is open (mobile)
@@ -107,7 +107,11 @@ export default function Header() {
                 <LanguageSwitcher />
                 {headerLinks.map((link) => (
                   <Link href={link.href} key={link.href} className="">
-                    <Button variant={"link"} className="text-lg">
+                    <Button
+                      variant={"link"}
+                      className="text-lg"
+                      disabled={link.disabled}
+                    >
                       {t(link.key)}
                     </Button>
                   </Link>

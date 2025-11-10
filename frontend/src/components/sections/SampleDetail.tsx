@@ -20,6 +20,7 @@ export interface PortfolioItem {
   mediaType?: string[];
   videoUrl?: string;
   category?: string;
+  lang?: "fa" | "en";
 }
 
 export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
@@ -50,7 +51,15 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div
+      className="flex flex-col"
+      lang={item.lang || "fa"}
+      dir={item.lang === "fa" ? "rtl" : "ltr"}
+      style={{
+        fontFamily:
+          item.lang === "fa" ? "var(--font-yekan)" : "var(--font-primary)",
+      }}
+    >
       {/* start section */}
       <div className="w-full flex flex-col lg:flex-row justify-between items-center lg:h-[90vh]">
         <div className="w-full lg:w-4/10 h-full flex flex-col justify-around px-8 gap-10">
