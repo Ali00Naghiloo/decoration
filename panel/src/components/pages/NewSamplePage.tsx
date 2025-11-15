@@ -63,6 +63,17 @@ export default function NewSamplePage() {
         "des",
         JSON.stringify({ fa: desFa.trim(), en: desEn.trim() })
       );
+
+      // also include an explicit `translations` object for clarity (backend will accept title/description/des separately)
+      formData.append(
+        "translations",
+        JSON.stringify({
+          title: { fa: titleFa.trim(), en: titleEn.trim() },
+          description: { fa: descriptionFa, en: descriptionEn },
+          des: { fa: desFa.trim(), en: desEn.trim() },
+        })
+      );
+
       formData.append("lang", lang); // fallback/original language
       formData.append("status", status.toString());
 
@@ -125,6 +136,9 @@ export default function NewSamplePage() {
         </div>
 
         <div>
+          <h2 className="text-lg font-semibold mb-2">
+            ترجمه‌ها / Translations
+          </h2>
           <label className="block mb-1 font-semibold">عنوان (فارسی)</label>
           <Input
             type="text"

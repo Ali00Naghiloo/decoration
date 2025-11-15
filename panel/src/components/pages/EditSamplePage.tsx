@@ -155,6 +155,9 @@ export default function EditSamplePage() {
         </div>
 
         <div>
+          <h2 className="text-lg font-semibold mb-2">
+            ترجمه‌ها / Translations
+          </h2>
           <label className="block mb-1 font-semibold">عنوان (فارسی)</label>
           <Input
             placeholder="عنوان نمونه"

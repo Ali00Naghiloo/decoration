@@ -2,7 +2,14 @@ import { useTranslation } from "@/src/hooks/useTranslation";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 
-type TranslatedString = string | { fa?: string; en?: string };
+/**
+ * TranslatedString may be a plain string (legacy) or an object with
+ * language keys. The index signature lets us access keys safely
+ * without casting to `any`.
+ */
+type TranslatedString =
+  | string
+  | { fa?: string; en?: string; [key: string]: string | undefined };
 
 interface SampleCardProps {
   id: string;
@@ -11,28 +18,79 @@ interface SampleCardProps {
   cover?: string;
   description?: TranslatedString;
   des?: TranslatedString;
+  // optionally accept a translations object (panel/backend may provide this)
+  translations?: {
+    title?: TranslatedString;
+    description?: TranslatedString;
+    des?: TranslatedString;
+    [key: string]: TranslatedString | undefined;
+  };
 }
 
 export default function SampleCard({
-  id,
   title,
   category,
   cover,
   description,
   des,
+  translations,
 }: SampleCardProps) {
   const { t } = useTranslation();
-  const locale = useLocale() || "fa";
+  const rawLocale = useLocale() || "fa";
+  const locale = (rawLocale.toString().startsWith("fa") ? "fa" : "en") as
+    | "fa"
+    | "en";
 
   const pickTranslated = (val?: TranslatedString) => {
     if (!val) return "";
     if (typeof val === "string") return val;
-    return (val as any)[locale] || val.fa || val.en || "";
+
+    // Use a typed local object to avoid `any` casts
+    const obj = val as { [k: string]: string | undefined };
+
+    // Prefer the current locale only if it's a non-empty string.
+    const byLocale = obj[locale];
+    if (typeof byLocale === "string" && byLocale.trim().length > 0)
+      return byLocale;
+
+    // fallback to any non-empty translation available
+    if (typeof obj.fa === "string" && obj.fa.trim().length > 0) return obj.fa;
+    if (typeof obj.en === "string" && obj.en.trim().length > 0) return obj.en;
+
+    // last resort: return locale key even if empty, or empty string
+    return byLocale || "";
   };
 
-  const displayTitle = pickTranslated(title);
-  const displayDes = pickTranslated(des);
-  const showDescription = !!pickTranslated(description);
+  // Prefer translation for the current locale when available.
+  // If translations.<field> has no value for the current locale, fall back to
+  // the already-localized top-level prop (the backend returns `title` as a
+  // localized string when requested with ?locale=...).
+  const getLocaleRaw = (val?: TranslatedString) => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    return (val as { [k: string]: string })[locale] ?? "";
+  };
+
+  const displayTitle =
+    // backend now returns `title` as an object; handle both shapes
+    typeof translations?.title !== "undefined"
+      ? pickTranslated(translations?.title)
+      : typeof title === "object"
+      ? pickTranslated(title)
+      : (title as string);
+
+  const displayDes =
+    typeof translations?.des !== "undefined"
+      ? pickTranslated(translations?.des)
+      : typeof des === "object"
+      ? pickTranslated(des)
+      : (des as string);
+
+  const showDescription = !!(typeof translations?.description !== "undefined"
+    ? !!pickTranslated(translations?.description)
+    : typeof description === "object"
+    ? !!pickTranslated(description)
+    : !!(description as string));
 
   return (
     <div className="w-[290px] xl:w-[420px] h-[385px] xl:h-[490px] flex flex-col items-start gap-6 rounded-3xl p-4 bg-[#F9F9F9] shadow">

@@ -49,24 +49,32 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
   };
 
   // Title / description / summary selection
-  const displayTitle = pickTranslated(item.title);
-  const displayDes = pickTranslated(item.des);
+  // Prefer translations object (managed in panel/backend) when available,
+  // otherwise fall back to top-level fields (legacy support).
+  const displayTitle = item.translations?.title
+    ? pickTranslated(item.translations.title)
+    : pickTranslated(item.title);
 
-  // description may be HTML string (legacy or already localized) or an object
+  const displayDes = item.translations?.des
+    ? pickTranslated(item.translations.des)
+    : pickTranslated(item.des);
+
+  // description may be HTML string (legacy) or an object. Prefer translations if present.
   const descriptionHtml = (() => {
-    if (!item.description) return "";
-    if (typeof item.description === "string") return item.description;
-    return pickTranslated(item.description);
+    const descSource = item.translations?.description ?? item.description;
+    if (!descSource) return "";
+    if (typeof descSource === "string") return descSource;
+    return pickTranslated(descSource);
   })();
 
   // Determine language for fonts / dir attribute: prefer explicit item.lang, fall back to current locale
-  const displayLang = item.lang || (locale as "fa" | "en");
+  const displayLang = item.lang || locale;
   const fontClass =
     displayLang === "fa" ? yekanFont.className : satoshiFont.variable;
 
   return (
     <div
-      className={`flex flex-col`}
+      className={`flex flex-col ${fontClass}`}
       lang={displayLang}
       dir={displayLang === "fa" ? "rtl" : "ltr"}
     >
@@ -111,7 +119,7 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
           />
         )}
 
-        <div className="mb-48 flex gap-4 items-center">
+        <div className="lg:mb-48 mb-10 flex gap-4 items-center">
           <span className="mr-4">{t("share")}</span>
           {[
             {

@@ -26,8 +26,25 @@ export default function Samples() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // normalize locale ("fa-IR" or "en-US" => "fa" | "en") before sending to API
+    const normalizedLocale = (locale as string).toString().startsWith("fa")
+      ? "fa"
+      : "en";
+
     // ask backend for items in the current locale; backend will also include `translations`
-    apiFetch(`/samples?locale=${locale}`).then(({ data }) => {
+    apiFetch(`/samples?locale=${normalizedLocale}`).then(({ data }) => {
+      try {
+        // debug: inspect returned shape to ensure translations exist and localized fields are set
+        // eslint-disable-next-line no-console
+        console.log("[Samples] fetched", {
+          normalizedLocale,
+          isArray: Array.isArray(data),
+          firstItem: Array.isArray(data) && data.length > 0 ? data[0] : data,
+        });
+      } catch (e) {
+        // ignore
+      }
+
       if (Array.isArray(data)) {
         setSamples(data as PortfolioItem[]);
       }
@@ -57,11 +74,24 @@ export default function Samples() {
           >
             <SampleCard
               id={sm._id}
-              title={sm.title}
+              title={
+                (sm as any).translations?.title ??
+                (typeof sm.title === "string"
+                  ? { fa: sm.title, en: "" }
+                  : sm.title)
+              }
               category={sm.category || ""}
               cover={sm.cover}
-              description={sm.description}
-              des={sm.des}
+              description={
+                (sm as any).translations?.description ??
+                (typeof sm.description === "string"
+                  ? { fa: sm.description, en: "" }
+                  : sm.description)
+              }
+              des={
+                (sm as any).translations?.des ??
+                (typeof sm.des === "string" ? { fa: sm.des, en: "" } : sm.des)
+              }
             />
           </Link>
         ))}

@@ -6,6 +6,7 @@ import SampleCard from "./SampleCard";
 import { useEffect, useState } from "react";
 import { Link } from "@/src/i18n/navigation";
 import { apiFetch } from "@/src/lib/api";
+import { useLocale } from "next-intl";
 
 interface PortfolioItem {
   _id: string;
@@ -18,17 +19,24 @@ interface PortfolioItem {
 
 export default function Samples() {
   const { t } = useTranslation();
+  // call hook at top-level and derive a stable normalized locale
+  const rawLocale = useLocale() || "fa";
+  const normalizedLocale = (rawLocale as string).toString().startsWith("fa")
+    ? "fa"
+    : "en";
+
   const [samples, setSamples] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch("/samples").then(({ data }) => {
+    // ask backend for items in the current normalized locale; backend will include `translations`
+    apiFetch(`/samples?locale=${normalizedLocale}`).then(({ data }) => {
       if (Array.isArray(data)) {
         setSamples(data);
       }
       setLoading(false);
     });
-  }, []);
+  }, [normalizedLocale]);
 
   return (
     <div id="samples" className="flex flex-col items-center gap-5 py-10">
@@ -70,6 +78,7 @@ export default function Samples() {
               cover={sm.cover}
               description={sm.description}
               des={sm.des}
+              translations={(sm as any).translations}
             />
           </Link>
         ))}

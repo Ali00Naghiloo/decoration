@@ -191,17 +191,19 @@ export const getPortfolioItemById = async (
         ? { fa: obj.des, en: "" }
         : { fa: obj.des?.fa || "", en: obj.des?.en || "" };
 
-    // Response picks the requested locale for simple compatibility with frontend
+    // Response returns full translated objects for each field so clients
+    // can choose the appropriate language or display both.
     const simple = {
       ...obj,
-      title: titleObj[locale] || titleObj.fa || titleObj.en,
-      description: descObj[locale] || descObj.fa || descObj.en || "",
-      des: desObj[locale] || desObj.fa || desObj.en || "",
+      // return the full objects instead of a single localized string
+      title: titleObj,
+      description: descObj,
+      des: desObj,
       cover,
       images,
       videoUrl,
       mediaUrl,
-      // include full translations for clients that can consume them
+      // keep translations for backward compatibility (same as the fields above)
       translations: {
         title: titleObj,
         description: descObj,
@@ -251,9 +253,10 @@ export const getAllPortfolioItems = async (
 
       return {
         ...obj,
-        title: titleObj[locale] || titleObj.fa || titleObj.en,
-        description: descObj[locale] || descObj.fa || descObj.en || "",
-        des: desObj[locale] || desObj.fa || desObj.en || "",
+        // return full translated objects so frontend can pick or render both languages
+        title: titleObj,
+        description: descObj,
+        des: desObj,
         translations: {
           title: titleObj,
           description: descObj,
