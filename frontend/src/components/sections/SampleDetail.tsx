@@ -1,26 +1,35 @@
 "use client";
 
-import "plyr-react/plyr.css"; // این را می‌توان حذف کرد اگر فایل CSS بالا import شده باشد
+import "plyr-react/plyr.css";
 import MediaSlider, { MediaItem } from "@/src/components/forms/MediaSlider";
 import { Button } from "../ui/button";
 import { Link } from "@/src/i18n/navigation";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "@/src/hooks/useTranslation";
+import { useLocale } from "next-intl";
 import Image from "next/image";
-import { Video } from "@/src/components/ui/video"; // کامپوننت جدید را import کنید
+import { Video } from "@/src/components/ui/video";
+import { satoshiFont, yekanFont } from "@/app/fonts";
+
+type TranslatedString = string | { fa?: string; en?: string };
 
 export interface PortfolioItem {
   _id: string;
-  title: string;
+  title: TranslatedString;
   cover?: string;
-  description?: string;
-  des?: string;
+  description?: TranslatedString;
+  des?: TranslatedString;
   images?: string[];
   mediaUrl?: string;
   mediaType?: string[];
   videoUrl?: string;
   category?: string;
   lang?: "fa" | "en";
+  translations?: {
+    title?: { fa?: string; en?: string };
+    description?: { fa?: string; en?: string };
+    des?: { fa?: string; en?: string };
+  };
 }
 
 export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
@@ -29,38 +38,38 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
     media.push(...item.images.map((url) => ({ type: "image" as const, url })));
   if (item?.videoUrl) media.push({ type: "video", url: item?.videoUrl });
   else if (item.cover) media.push({ type: "image", url: item.cover });
-  const { t } = useTranslation();
 
-  const socials = [
-    {
-      name: "Facebook",
-      url: "https://facebook.com",
-      icon: "/icons/facebook.svg",
-    },
-    {
-      name: "Instagram",
-      url: "https://instagram.com",
-      icon: "/icons/instagram.svg",
-    },
-    { name: "Twitter", url: "https://twitter.com", icon: "/icons/x.svg" },
-    {
-      name: "LinkedIn",
-      url: "https://linkedin.com",
-      icon: "/icons/linkedin.svg",
-    },
-  ];
+  const { t } = useTranslation();
+  const locale = (useLocale() || "fa") as "fa" | "en";
+
+  const pickTranslated = (val?: TranslatedString) => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    return val[locale] ?? val.fa ?? val.en ?? "";
+  };
+
+  // Title / description / summary selection
+  const displayTitle = pickTranslated(item.title);
+  const displayDes = pickTranslated(item.des);
+
+  // description may be HTML string (legacy or already localized) or an object
+  const descriptionHtml = (() => {
+    if (!item.description) return "";
+    if (typeof item.description === "string") return item.description;
+    return pickTranslated(item.description);
+  })();
+
+  // Determine language for fonts / dir attribute: prefer explicit item.lang, fall back to current locale
+  const displayLang = item.lang || (locale as "fa" | "en");
+  const fontClass =
+    displayLang === "fa" ? yekanFont.className : satoshiFont.variable;
 
   return (
     <div
-      className="flex flex-col"
-      lang={item.lang || "fa"}
-      dir={item.lang === "fa" ? "rtl" : "ltr"}
-      style={{
-        fontFamily:
-          item.lang === "fa" ? "var(--font-yekan)" : "var(--font-primary)",
-      }}
+      className={`flex flex-col`}
+      lang={displayLang}
+      dir={displayLang === "fa" ? "rtl" : "ltr"}
     >
-      {/* start section */}
       <div className="w-full flex flex-col lg:flex-row justify-between items-center lg:h-[90vh]">
         <div className="w-full lg:w-4/10 h-full flex flex-col justify-around px-8 gap-10">
           <div className="w-fit">
@@ -71,18 +80,20 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
               </Button>
             </Link>
           </div>
-          <h1 className="text-4xl g:text-6xl text-center">{item.title}</h1>
-          <div></div>
+          <h1 className="text-4xl lg:text-5xl text-center lg:min-h-[300px]">
+            {displayTitle}
+          </h1>
+          <div />
         </div>
+
         <div className="w-full lg:w-6/10 h-1/2 min-h-[300px] px-5 lg:px-10">
           <MediaSlider media={media} />
         </div>
       </div>
 
       <div className="max-w-[900px] mx-auto flex flex-col gap-5 px-5 py-10">
-        {/* بخش ویدیو پلیر */}
         {item.videoUrl && (
-          <div className="w-full h-fit my-10 rounded-3xl">
+          <div className="hidden w-full h-fit my-10 rounded-3xl">
             <Video
               src={item.videoUrl}
               poster={item.cover}
@@ -92,15 +103,38 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
             />
           </div>
         )}
-        {item.description && (
+
+        {descriptionHtml && (
           <div
-            dangerouslySetInnerHTML={{ __html: item.description }}
+            dangerouslySetInnerHTML={{ __html: descriptionHtml }}
             className="richtext text-[18px] text-[#444] mb-6 p-4 rounded"
           />
         )}
+
         <div className="mb-48 flex gap-4 items-center">
           <span className="mr-4">{t("share")}</span>
-          {socials.map((social) => (
+          {[
+            {
+              name: "Facebook",
+              url: "https://facebook.com",
+              icon: "/icons/facebook.svg",
+            },
+            {
+              name: "Instagram",
+              url: "https://instagram.com",
+              icon: "/icons/instagram.svg",
+            },
+            {
+              name: "Twitter",
+              url: "https://twitter.com",
+              icon: "/icons/x.svg",
+            },
+            {
+              name: "LinkedIn",
+              url: "https://linkedin.com",
+              icon: "/icons/linkedin.svg",
+            },
+          ].map((social) => (
             <a
               key={social.name}
               href={social.url}

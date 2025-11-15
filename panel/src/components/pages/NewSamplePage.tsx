@@ -11,17 +11,22 @@ import api from "@/src/lib/api";
 const RichTextEditor = dynamic(
   () => import("@/src/components/forms/RichTextEditor"),
   {
-    ssr: false, // This is crucial!
+    ssr: false, // editor is client-only
     loading: () => <p>در حال بارگذاری ادیتور...</p>,
   }
 );
 
 export default function NewSamplePage() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [des, setDes] = useState(""); // توضیح خلاصه
-  const [lang, setLang] = useState<"fa" | "en">("fa"); // زبان نمونه‌کار
-  const [status, setStatus] = useState(1); // وضعیت نمایش
+  // Translated fields: fa and en
+  const [titleFa, setTitleFa] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [desFa, setDesFa] = useState("");
+  const [desEn, setDesEn] = useState("");
+  const [descriptionFa, setDescriptionFa] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
+
+  const [lang, setLang] = useState<"fa" | "en">("fa"); // default editor language view
+  const [status, setStatus] = useState(1);
   const [files, setFiles] = useState<File[]>([]);
   const [video, setVideo] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,33 +35,54 @@ export default function NewSamplePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description) {
-      toast.error("عنوان و توضیحات الزامی است.");
+
+    // basic validation: require at least one title and one description (in any language)
+    if (!titleFa.trim() && !titleEn.trim()) {
+      toast.error("حداقل یکی از عنوان‌ها را وارد کنید (fa یا en).");
       return;
     }
+    if (!descriptionFa.trim() && !descriptionEn.trim()) {
+      toast.error("حداقل یکی از توضیحات را وارد کنید (fa یا en).");
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("des", des);
-      formData.append("lang", lang); // زبان نمونه‌کار
+
+      // send translated fields as JSON strings so backend can detect objects
+      formData.append(
+        "title",
+        JSON.stringify({ fa: titleFa.trim(), en: titleEn.trim() })
+      );
+      formData.append(
+        "description",
+        JSON.stringify({ fa: descriptionFa, en: descriptionEn })
+      );
+      formData.append(
+        "des",
+        JSON.stringify({ fa: desFa.trim(), en: desEn.trim() })
+      );
+      formData.append("lang", lang); // fallback/original language
       formData.append("status", status.toString());
-      files.forEach((file, idx) => {
-        formData.append("images", file);
-      });
-      if (video) {
-        formData.append("video", video);
-      }
+
+      files.forEach((file) => formData.append("images", file));
+      if (video) formData.append("video", video);
+
       await api.post("/samples", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       toast.success("نمونه‌کار جدید با موفقیت ایجاد شد!");
-      setTitle("");
-      setDescription("");
+      // reset
+      setTitleFa("");
+      setTitleEn("");
+      setDesFa("");
+      setDesEn("");
+      setDescriptionFa("");
+      setDescriptionEn("");
       setFiles([]);
       setVideo(null);
-      // ریدایرکت به لیست نمونه‌کارها
       window.location.href = "/dashboard/samples";
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
@@ -66,7 +92,7 @@ export default function NewSamplePage() {
               "خطا در ایجاد نمونه‌کار. لطفاً دوباره تلاش کنید."
           );
         } else {
-          toast.error("خطای ناشناخته رخ داد.");
+          toast.error("خطای شبکه یا سرور رخ داد.");
         }
       } else {
         toast.error("خطای ناشناخته رخ داد.");
@@ -81,23 +107,12 @@ export default function NewSamplePage() {
       <h1 className="text-2xl font-bold mb-6 text-center">
         ایجاد نمونه‌کار جدید
       </h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1 font-semibold">
-            عنوان نمونه‌کار (title)
-          </label>
-          <Input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="مثلاً طراحی سایت فروشگاهی"
-            required
-          />
-        </div>
 
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Language switcher for editing */}
         <div>
           <label className="block mb-1 font-semibold">
-            زبان نمونه‌کار (lang)
+            نمایش و ویرایش زبان
           </label>
           <select
             value={lang}
@@ -108,27 +123,65 @@ export default function NewSamplePage() {
             <option value="en">English (en)</option>
           </select>
         </div>
+
         <div>
-          <label className="block mb-1 font-semibold">توضیح خلاصه (des)</label>
+          <label className="block mb-1 font-semibold">عنوان (فارسی)</label>
           <Input
             type="text"
-            value={des}
-            onChange={(e) => setDes(e.target.value)}
-            placeholder="توضیح کوتاه برای کارت"
-            required
+            value={titleFa}
+            onChange={(e) => setTitleFa(e.target.value)}
+            placeholder="عنوان به فارسی"
           />
         </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">Title (English)</label>
+          <Input
+            type="text"
+            value={titleEn}
+            onChange={(e) => setTitleEn(e.target.value)}
+            placeholder="Title in English"
+          />
+        </div>
+
         <div>
           <label className="block mb-1 font-semibold">
-            توضیحات (description)
+            توضیح خلاصه (فارسی)
           </label>
+          <Input
+            type="text"
+            value={desFa}
+            onChange={(e) => setDesFa(e.target.value)}
+            placeholder="توضیح کوتاه به فارسی"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">Summary (English)</label>
+          <Input
+            type="text"
+            value={desEn}
+            onChange={(e) => setDesEn(e.target.value)}
+            placeholder="Short description in English"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">توضیحات (فارسی)</label>
           {typeof window !== "undefined" && (
-            <RichTextEditor
-              value={description}
-              onChange={(content: string) => setDescription(content)}
-            />
+            <RichTextEditor value={descriptionFa} onChange={setDescriptionFa} />
           )}
         </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">
+            Description (English)
+          </label>
+          {typeof window !== "undefined" && (
+            <RichTextEditor value={descriptionEn} onChange={setDescriptionEn} />
+          )}
+        </div>
+
         <div>
           <label className="block mb-1 font-semibold">
             آپلود تصاویر (images)
@@ -155,7 +208,7 @@ export default function NewSamplePage() {
             انتخاب تصاویر
           </Button>
         </div>
-        {/* پیش‌نمایش تصاویر انتخاب‌شده */}
+
         <div className="flex flex-wrap gap-2 mt-2">
           {files.map((file, idx) => (
             <div key={idx} className="relative group">
@@ -164,18 +217,16 @@ export default function NewSamplePage() {
                 alt={`preview-${idx}`}
                 className="w-24 h-24 object-cover rounded border"
               />
-              {/* دکمه حذف */}
               <button
                 type="button"
                 className="absolute top-1 left-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-80 hover:opacity-100"
-                onClick={() => {
-                  setFiles((prev) => prev.filter((_, i) => i !== idx));
-                }}
+                onClick={() =>
+                  setFiles((prev) => prev.filter((_, i) => i !== idx))
+                }
                 title="حذف عکس"
               >
                 ×
               </button>
-              {/* دکمه تعویض */}
               <input
                 type="file"
                 accept="image/*"
@@ -199,6 +250,7 @@ export default function NewSamplePage() {
             </div>
           ))}
         </div>
+
         <div>
           <label className="block mb-1 font-semibold">
             آپلود ویدیو (یک عدد)
@@ -222,7 +274,7 @@ export default function NewSamplePage() {
             انتخاب ویدیو
           </Button>
         </div>
-        {/* پیش‌نمایش عکس‌ها کنار دکمه آپلود نمایش داده می‌شود */}
+
         <div className="mt-4">
           {video && (
             <video
@@ -232,6 +284,7 @@ export default function NewSamplePage() {
             />
           )}
         </div>
+
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "در حال ارسال..." : "ایجاد نمونه‌کار"}
         </Button>

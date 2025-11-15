@@ -52,21 +52,62 @@ export const createPortfolioItem = async (
 ) => {
   try {
     const { title, description, status, des, lang } = req.body;
+
+    // Helper: parse a possible JSON-stringified object or plain string into a translated-field object
+    const parseMaybeTranslated = (val: any, fallbackLang: string) => {
+      if (!val) return { fa: "", en: "" };
+      if (typeof val === "object") {
+        return { fa: val.fa || "", en: val.en || "" };
+      }
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        // try parse JSON
+        if (trimmed.startsWith("{")) {
+          try {
+            const p = JSON.parse(trimmed);
+            return { fa: p.fa || "", en: p.en || "" };
+          } catch {
+            // not JSON — treat as single-language string
+          }
+        }
+        return fallbackLang === "en"
+          ? { fa: "", en: trimmed }
+          : { fa: trimmed, en: "" };
+      }
+      return { fa: "", en: "" };
+    };
+
     if (!title || !description) {
       return next(new AppError("Title and description are required.", 400));
     }
 
-    // Validate lang and default to 'fa' when not provided or invalid
     const normalizedLang = lang === "en" ? "en" : "fa";
 
-    // Sanitize inner HTML, then wrap with a lightweight container that records language & direction.
-    // Allow style/class/lang/dir attributes so editor font selections survive sanitization.
-    const sanitizedInner = purify.sanitize(description, {
-      ADD_ATTR: ["style", "class", "lang", "dir"],
-    } as any);
-    const descriptionToSave = `<div lang="${normalizedLang}" dir="${
-      normalizedLang === "fa" ? "rtl" : "ltr"
-    }" class="sample-content">${sanitizedInner}</div>`;
+    // Parse fields (supports both legacy single-string and new translated-object payloads)
+    const titleObj = parseMaybeTranslated(title, normalizedLang);
+    const desObj = parseMaybeTranslated(des, normalizedLang);
+    const descParsed = parseMaybeTranslated(description, normalizedLang);
+
+    // Sanitize and wrap description per language
+    const prepareDescriptionObj = (descObj: any) => {
+      const out: any = { fa: "", en: "" };
+      (["fa", "en"] as const).forEach((l) => {
+        const raw = descObj[l] || "";
+        if (raw && raw.trim()) {
+          const sanitizedInner = purify.sanitize(raw, {
+            ADD_ATTR: ["style", "class", "lang", "dir"],
+          } as any);
+          out[l] = `<div lang="${l}" dir="${
+            l === "fa" ? "rtl" : "ltr"
+          }" class="sample-content">${sanitizedInner}</div>`;
+        } else {
+          out[l] = "";
+        }
+      });
+      return out;
+    };
+
+    const descriptionObj = prepareDescriptionObj(descParsed);
 
     // ذخیره چند عکس و انتخاب کاور
     let images: string[] = [];
@@ -77,7 +118,7 @@ export const createPortfolioItem = async (
         getFileUrl(req, file.filename)
       );
       if (images.length > 0) {
-        cover = images[0]; // اولین عکس به عنوان کاور
+        cover = images[0];
       }
     }
 
@@ -92,18 +133,16 @@ export const createPortfolioItem = async (
     if (images.length > 0) mediaTypeArr.push("image");
     if (videoUrl) mediaTypeArr.push("video");
 
-    // normalizedLang already determined earlier; create item using descriptionToSave
     const newItem = await Sample.create({
-      title,
-      // store wrapped HTML (includes lang/dir)
-      description: descriptionToSave,
+      title: { fa: titleObj.fa || "", en: titleObj.en || "" },
+      description: { fa: descriptionObj.fa || "", en: descriptionObj.en || "" },
       images,
       cover,
       videoUrl,
-      mediaUrl: cover, // برای سازگاری با کد قبلی
+      mediaUrl: cover,
       mediaType: mediaTypeArr,
       status: typeof status !== "undefined" ? status : 1,
-      des: des || "",
+      des: { fa: desObj.fa || "", en: desObj.en || "" },
       lang: normalizedLang,
     });
 
@@ -124,21 +163,55 @@ export const getPortfolioItemById = async (
   next: NextFunction
 ) => {
   try {
+    const locale = req.query.locale === "en" ? "en" : "fa";
     const item = await Sample.findById(req.params.id);
     if (!item) {
       return next(new AppError("No item found with that ID.", 404));
     }
-    const normalizedItem = {
-      ...item.toObject(),
-      cover: normalizeUrl(item.cover),
-      images: normalizeUrls(item.images),
-      videoUrl: normalizeUrl(item.videoUrl),
-      mediaUrl: normalizeUrl(item.mediaUrl),
+
+    const obj = item.toObject ? item.toObject() : item;
+
+    // Normalize URLs
+    const cover = normalizeUrl(obj.cover);
+    const images = normalizeUrls(obj.images);
+    const videoUrl = normalizeUrl(obj.videoUrl);
+    const mediaUrl = normalizeUrl(obj.mediaUrl);
+
+    // Support legacy schema where title/description/des were plain strings
+    const titleObj =
+      typeof obj.title === "string"
+        ? { fa: obj.title, en: "" }
+        : { fa: obj.title?.fa || "", en: obj.title?.en || "" };
+    const descObj =
+      typeof obj.description === "string"
+        ? { fa: obj.description, en: "" }
+        : { fa: obj.description?.fa || "", en: obj.description?.en || "" };
+    const desObj =
+      typeof obj.des === "string"
+        ? { fa: obj.des, en: "" }
+        : { fa: obj.des?.fa || "", en: obj.des?.en || "" };
+
+    // Response picks the requested locale for simple compatibility with frontend
+    const simple = {
+      ...obj,
+      title: titleObj[locale] || titleObj.fa || titleObj.en,
+      description: descObj[locale] || descObj.fa || descObj.en || "",
+      des: desObj[locale] || desObj.fa || desObj.en || "",
+      cover,
+      images,
+      videoUrl,
+      mediaUrl,
+      // include full translations for clients that can consume them
+      translations: {
+        title: titleObj,
+        description: descObj,
+        des: desObj,
+      },
     };
 
     res.status(200).json({
       status: "success",
-      data: normalizedItem,
+      data: simple,
     });
   } catch (error) {
     next(error);
@@ -155,14 +228,37 @@ export const getAllPortfolioItems = async (
   next: NextFunction
 ) => {
   try {
+    const locale = req.query.locale === "en" ? "en" : "fa";
     // اگر کوئری all=true باشد، همه نمونه‌کارها را برگردان (برای پنل)
     const filter = req.query.all === "true" ? {} : { status: 1 };
     const items = await Sample.find(filter);
-    // ارسال آرایه عکس‌ها و کاور با نرمال‌سازی URL ها
+
     const itemsWithCover = items.map((item: any) => {
-      const obj = item.toObject();
+      const obj = item.toObject ? item.toObject() : item;
+
+      const titleObj =
+        typeof obj.title === "string"
+          ? { fa: obj.title, en: "" }
+          : { fa: obj.title?.fa || "", en: obj.title?.en || "" };
+      const descObj =
+        typeof obj.description === "string"
+          ? { fa: obj.description, en: "" }
+          : { fa: obj.description?.fa || "", en: obj.description?.en || "" };
+      const desObj =
+        typeof obj.des === "string"
+          ? { fa: obj.des, en: "" }
+          : { fa: obj.des?.fa || "", en: obj.des?.en || "" };
+
       return {
         ...obj,
+        title: titleObj[locale] || titleObj.fa || titleObj.en,
+        description: descObj[locale] || descObj.fa || descObj.en || "",
+        des: desObj[locale] || desObj.fa || desObj.en || "",
+        translations: {
+          title: titleObj,
+          description: descObj,
+          des: desObj,
+        },
         cover: normalizeUrl(obj.cover || (obj.images && obj.images[0])),
         images: normalizeUrls(obj.images),
         videoUrl: normalizeUrl(obj.videoUrl),
@@ -190,20 +286,83 @@ export const updatePortfolioItem = async (
       return next(new AppError("No item found with that ID.", 404));
     }
 
-    if (req.body.title) item.title = req.body.title;
-    if (req.body.description) {
-      // sanitize inner HTML then wrap with lang/dir using the item's lang (or provided lang)
-      const inner = purify.sanitize(req.body.description, {
-        ADD_ATTR: ["style", "class", "lang", "dir"],
-      } as any);
-      const langForWrap =
-        (item.lang as string) || (req.body.lang as string) || "fa";
-      item.description = `<div lang="${langForWrap}" dir="${
-        langForWrap === "fa" ? "rtl" : "ltr"
-      }" class="sample-content">${inner}</div>`;
+    const parseMaybeTranslated = (val: any, fallbackLang: string) => {
+      if (!val) return { fa: "", en: "" };
+      if (typeof val === "object") {
+        return { fa: val.fa || "", en: val.en || "" };
+      }
+      if (typeof val === "string") {
+        const trimmed = val.trim();
+        if (trimmed.startsWith("{")) {
+          try {
+            const p = JSON.parse(trimmed);
+            return { fa: p.fa || "", en: p.en || "" };
+          } catch {
+            // not JSON
+          }
+        }
+        return fallbackLang === "en"
+          ? { fa: "", en: trimmed }
+          : { fa: trimmed, en: "" };
+      }
+      return { fa: "", en: "" };
+    };
+
+    // Update title
+    if (typeof req.body.title !== "undefined") {
+      const titleObj = parseMaybeTranslated(
+        req.body.title,
+        (req.body.lang as string) || item.lang || "fa"
+      );
+      item.title = {
+        fa: titleObj.fa || item.title?.fa || "",
+        en: titleObj.en || item.title?.en || "",
+      } as any;
     }
+
+    // Update description (sanitize and wrap per language)
+    if (typeof req.body.description !== "undefined") {
+      const descParsed = parseMaybeTranslated(
+        req.body.description,
+        (req.body.lang as string) || item.lang || "fa"
+      );
+      const prepareDescriptionObj = (descObj: any) => {
+        const out: any = { fa: "", en: "" };
+        (["fa", "en"] as const).forEach((l) => {
+          const raw = descObj[l] || "";
+          if (raw && raw.trim()) {
+            const inner = purify.sanitize(raw, {
+              ADD_ATTR: ["style", "class", "lang", "dir"],
+            } as any);
+            out[l] = `<div lang="${l}" dir="${
+              l === "fa" ? "rtl" : "ltr"
+            }" class="sample-content">${inner}</div>`;
+          } else {
+            out[l] = "";
+          }
+        });
+        return out;
+      };
+      const descToSave = prepareDescriptionObj(descParsed);
+      item.description = {
+        fa: descToSave.fa || item.description?.fa || "",
+        en: descToSave.en || item.description?.en || "",
+      } as any;
+    }
+
     if (typeof req.body.status !== "undefined") item.status = req.body.status;
-    if (typeof req.body.des !== "undefined") item.des = req.body.des;
+
+    // des (summary) may be translated
+    if (typeof req.body.des !== "undefined") {
+      const desObj = parseMaybeTranslated(
+        req.body.des,
+        (req.body.lang as string) || item.lang || "fa"
+      );
+      item.des = {
+        fa: desObj.fa || item.des?.fa || "",
+        en: desObj.en || item.des?.en || "",
+      } as any;
+    }
 
     // Update language if provided and valid
     if (typeof req.body.lang !== "undefined") {

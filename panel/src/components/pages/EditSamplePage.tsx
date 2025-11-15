@@ -19,12 +19,17 @@ export default function EditSamplePage() {
   const params = useParams();
   const id = params?.id as string;
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [des, setDes] = useState(""); // توضیح خلاصه
-  const [lang, setLang] = useState<"fa" | "en">("fa"); // زبان نمونه‌کار
+  // Translated fields
+  const [titleFa, setTitleFa] = useState("");
+  const [titleEn, setTitleEn] = useState("");
+  const [descriptionFa, setDescriptionFa] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
+  const [desFa, setDesFa] = useState(""); // توضیح خلاصه فارسی
+  const [desEn, setDesEn] = useState(""); // توضیح خلاصه انگلیسی
+
+  const [lang, setLang] = useState<"fa" | "en">("fa"); // fallback/original
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<any[]>([]);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,9 +37,33 @@ export default function EditSamplePage() {
       try {
         const { getSampleById } = await import("@/src/lib/api");
         const data = await getSampleById(id);
-        setTitle(data.title);
-        setDescription(data.description);
-        setDes(data.des || "");
+
+        // data may include translations object or localized strings
+        const translations = (data as any).translations || {};
+        const titleObj =
+          translations.title ||
+          (typeof data.title === "object"
+            ? data.title
+            : { fa: data.title || "", en: "" });
+        const descObj =
+          translations.description ||
+          (typeof data.description === "object"
+            ? data.description
+            : { fa: data.description || "", en: "" });
+        const desObj =
+          translations.des ||
+          (typeof data.des === "object"
+            ? data.des
+            : { fa: data.des || "", en: "" });
+
+        setTitleFa(titleObj.fa || "");
+        setTitleEn(titleObj.en || "");
+        // stored description likely wrapped HTML per language; remove wrapper? keep as-is for editor
+        setDescriptionFa(descObj.fa || "");
+        setDescriptionEn(descObj.en || "");
+        setDesFa(desObj.fa || "");
+        setDesEn(desObj.en || "");
+
         setLang((data as any).lang || "fa");
 
         if (Array.isArray(data.images)) {
@@ -43,7 +72,7 @@ export default function EditSamplePage() {
           setImages([]);
         }
 
-        setVideoUrl(null);
+        setVideoUrl(data.videoUrl || null);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "خطا در دریافت اطلاعات نمونه‌کار");
@@ -56,10 +85,8 @@ export default function EditSamplePage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Dynamically import uploadFile utility
       const { uploadFile } = await import("@/src/lib/upload");
 
-      // Upload new images if any (File), keep URLs as is
       const uploadedImages: string[] = [];
       for (const img of images) {
         if (typeof img === "string") {
@@ -75,7 +102,6 @@ export default function EditSamplePage() {
         }
       }
 
-      // Upload new video if needed
       let videoUrlToSend: string | undefined = undefined;
       if (
         videoUrl &&
@@ -89,23 +115,17 @@ export default function EditSamplePage() {
         videoUrlToSend = videoUrl;
       }
 
-      const data: {
-        title: string;
-        description: string;
-        des: string;
-        lang?: "fa" | "en";
-        images?: string[];
-        videoUrl?: string;
-      } = {
-        title,
-        description,
-        des,
+      // Build translated payloads. Send as objects (API accepts object or JSON string)
+      const payload: any = {
+        title: { fa: titleFa.trim(), en: titleEn.trim() },
+        description: { fa: descriptionFa, en: descriptionEn },
+        des: { fa: desFa.trim(), en: desEn.trim() },
         lang,
         images: uploadedImages,
         videoUrl: videoUrlToSend,
       };
 
-      await updateSample(id, data);
+      await updateSample(id, payload);
       toast.success("نمونه‌کار با موفقیت ویرایش شد!");
       router.push("/dashboard/samples");
     } catch (err) {
@@ -120,15 +140,9 @@ export default function EditSamplePage() {
     <div className="mx-auto mt-10">
       <h1 className="text-2xl font-bold mb-6">ویرایش نمونه</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          placeholder="عنوان نمونه"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
         <div>
           <label className="block mb-1 font-semibold">
-            زبان نمونه‌کار (lang)
+            نمایش و ویرایش زبان
           </label>
           <select
             value={lang}
@@ -139,16 +153,50 @@ export default function EditSamplePage() {
             <option value="en">English (en)</option>
           </select>
         </div>
-        <Input
-          placeholder="توضیح خلاصه (des)"
-          value={des}
-          onChange={(e) => setDes(e.target.value)}
-        />
-        {/* توضیحات با RichTextEditor */}
+
         <div>
-          <label className="block mb-1 font-semibold">توضیحات</label>
+          <label className="block mb-1 font-semibold">عنوان (فارسی)</label>
+          <Input
+            placeholder="عنوان نمونه"
+            value={titleFa}
+            onChange={(e) => setTitleFa(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">Title (English)</label>
+          <Input
+            placeholder="Title"
+            value={titleEn}
+            onChange={(e) => setTitleEn(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">
+            توضیح خلاصه (فارسی)
+          </label>
+          <Input value={desFa} onChange={(e) => setDesFa(e.target.value)} />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">Summary (English)</label>
+          <Input value={desEn} onChange={(e) => setDesEn(e.target.value)} />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">توضیحات (فارسی)</label>
           <React.Suspense fallback={<div>در حال بارگذاری ویرایشگر...</div>}>
-            <RichTextEditor value={description} onChange={setDescription} />
+            <RichTextEditor value={descriptionFa} onChange={setDescriptionFa} />
+          </React.Suspense>
+        </div>
+
+        <div>
+          <label className="block mb-1 font-semibold">
+            Description (English)
+          </label>
+          <React.Suspense fallback={<div>در حال بارگذاری ویرایشگر...</div>}>
+            <RichTextEditor value={descriptionEn} onChange={setDescriptionEn} />
           </React.Suspense>
         </div>
 
@@ -161,7 +209,9 @@ export default function EditSamplePage() {
               {images.map((img, idx) => (
                 <div key={idx} className="relative group">
                   <img
-                    src={img}
+                    src={
+                      typeof img === "string" ? img : URL.createObjectURL(img)
+                    }
                     alt={`نمونه کار ${idx + 1}`}
                     className="w-32 h-32 object-cover rounded"
                   />
@@ -175,6 +225,7 @@ export default function EditSamplePage() {
                   >
                     حذف
                   </button>
+
                   <input
                     id={`replace-image-${idx}`}
                     type="file"
@@ -208,6 +259,7 @@ export default function EditSamplePage() {
               ))}
             </div>
           )}
+
           {videoUrl && (
             <div className="relative group mb-2">
               <video
@@ -249,6 +301,7 @@ export default function EditSamplePage() {
               </label>
             </div>
           )}
+
           <div className="flex gap-2 mt-2">
             <input
               id="edit-upload-images"
@@ -260,8 +313,6 @@ export default function EditSamplePage() {
                 if (e.target.files) {
                   const filesArr = Array.from(e.target.files);
                   try {
-                    // Debug log
-                    console.log("Uploading images:", filesArr);
                     const { uploadFile } = await import("@/src/lib/upload");
                     const uploadPromises = filesArr.map(async (file) => {
                       try {
@@ -269,7 +320,6 @@ export default function EditSamplePage() {
                         return res.url;
                       } catch (err) {
                         toast.error("آپلود تصویر انجام نشد");
-                        console.error("Image upload error:", err);
                         return null;
                       }
                     });
@@ -279,7 +329,6 @@ export default function EditSamplePage() {
                     setImages((prev) => [...prev, ...uploadedUrls]);
                   } catch (err) {
                     toast.error("خطا در بارگذاری یا آپلود تصویر");
-                    console.error("Upload handler error:", err);
                   }
                 }
               }}
@@ -296,6 +345,7 @@ export default function EditSamplePage() {
                 افزودن تصویر
               </Button>
             </label>
+
             <input
               id="edit-upload-video"
               type="file"
@@ -305,14 +355,11 @@ export default function EditSamplePage() {
                 if (e.target.files?.[0]) {
                   const file = e.target.files[0];
                   try {
-                    // Debug log
-                    console.log("Uploading video:", file);
                     const { uploadFile } = await import("@/src/lib/upload");
                     const res = await uploadFile(file);
                     setVideoUrl(res.url);
                   } catch (err) {
                     toast.error("آپلود ویدیو انجام نشد");
-                    console.error("Video upload error:", err);
                   }
                 }
               }}
@@ -331,6 +378,7 @@ export default function EditSamplePage() {
             </label>
           </div>
         </div>
+
         <Button
           type="submit"
           disabled={loading}

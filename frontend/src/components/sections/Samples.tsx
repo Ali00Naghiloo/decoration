@@ -6,29 +6,34 @@ import SampleCard from "./SampleCard";
 import { useEffect, useState } from "react";
 import { Link } from "@/src/i18n/navigation";
 import { apiFetch } from "@/src/lib/api";
+import { useLocale } from "next-intl";
+
+type MaybeTranslated = string | { fa?: string; en?: string };
 
 interface PortfolioItem {
   _id: string;
-  title: string;
-  description?: string;
-  des?: string;
+  title: MaybeTranslated;
+  description?: MaybeTranslated;
+  des?: MaybeTranslated;
   category?: string;
   cover?: string;
 }
 
 export default function Samples() {
   const { t } = useTranslation();
+  const locale = useLocale() || "fa";
   const [samples, setSamples] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch("/samples").then(({ data }) => {
+    // ask backend for items in the current locale; backend will also include `translations`
+    apiFetch(`/samples?locale=${locale}`).then(({ data }) => {
       if (Array.isArray(data)) {
-        setSamples(data);
+        setSamples(data as PortfolioItem[]);
       }
       setLoading(false);
     });
-  }, []);
+  }, [locale]);
 
   return (
     <div id="samples" className="flex flex-col items-center gap-5 py-10">
