@@ -18,13 +18,6 @@ interface SampleCardProps {
   cover?: string;
   description?: TranslatedString;
   des?: TranslatedString;
-  // optionally accept a translations object (panel/backend may provide this)
-  translations?: {
-    title?: TranslatedString;
-    description?: TranslatedString;
-    des?: TranslatedString;
-    [key: string]: TranslatedString | undefined;
-  };
 }
 
 export default function SampleCard({
@@ -33,7 +26,6 @@ export default function SampleCard({
   cover,
   description,
   des,
-  translations,
 }: SampleCardProps) {
   const { t } = useTranslation();
   const rawLocale = useLocale() || "fa";
@@ -44,53 +36,24 @@ export default function SampleCard({
   const pickTranslated = (val?: TranslatedString) => {
     if (!val) return "";
     if (typeof val === "string") return val;
-
-    // Use a typed local object to avoid `any` casts
     const obj = val as { [k: string]: string | undefined };
-
-    // Prefer the current locale only if it's a non-empty string.
     const byLocale = obj[locale];
-    if (typeof byLocale === "string" && byLocale.trim().length > 0)
-      return byLocale;
-
-    // fallback to any non-empty translation available
-    if (typeof obj.fa === "string" && obj.fa.trim().length > 0) return obj.fa;
-    if (typeof obj.en === "string" && obj.en.trim().length > 0) return obj.en;
-
-    // last resort: return locale key even if empty, or empty string
-    return byLocale || "";
+    if (typeof byLocale === "string" && byLocale.trim()) return byLocale;
+    if (typeof obj.fa === "string" && obj.fa.trim()) return obj.fa;
+    if (typeof obj.en === "string" && obj.en.trim()) return obj.en;
+    return "";
   };
 
-  // Prefer translation for the current locale when available.
-  // If translations.<field> has no value for the current locale, fall back to
-  // the already-localized top-level prop (the backend returns `title` as a
-  // localized string when requested with ?locale=...).
-  const getLocaleRaw = (val?: TranslatedString) => {
-    if (!val) return "";
-    if (typeof val === "string") return val;
-    return (val as { [k: string]: string })[locale] ?? "";
-  };
+  // Use per-field translated objects directly (backend returns title/description/des as {fa,en})
+  const displayTitle = pickTranslated(title);
+  const displayDes = pickTranslated(des);
 
-  const displayTitle =
-    // backend now returns `title` as an object; handle both shapes
-    typeof translations?.title !== "undefined"
-      ? pickTranslated(translations?.title)
-      : typeof title === "object"
-      ? pickTranslated(title)
-      : (title as string);
-
-  const displayDes =
-    typeof translations?.des !== "undefined"
-      ? pickTranslated(translations?.des)
-      : typeof des === "object"
-      ? pickTranslated(des)
-      : (des as string);
-
-  const showDescription = !!(typeof translations?.description !== "undefined"
-    ? !!pickTranslated(translations?.description)
-    : typeof description === "object"
-    ? !!pickTranslated(description)
-    : !!(description as string));
+  const showDescription = !!(
+    description &&
+    (typeof description === "string"
+      ? description
+      : pickTranslated(description))
+  );
 
   return (
     <div className="w-[290px] xl:w-[420px] h-[385px] xl:h-[490px] flex flex-col items-start gap-6 rounded-3xl p-4 bg-[#F9F9F9] shadow">

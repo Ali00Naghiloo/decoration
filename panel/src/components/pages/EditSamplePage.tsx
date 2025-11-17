@@ -9,6 +9,7 @@ import { Input } from "@/src/components/ui/input";
 import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
 import { updateSample } from "@/src/lib/api";
+import type { Sample } from "@/src/types";
 const RichTextEditor = dynamic(
   () => import("@/src/components/forms/RichTextEditor"),
   { ssr: false }
@@ -29,7 +30,7 @@ export default function EditSamplePage() {
 
   const [lang, setLang] = useState<"fa" | "en">("fa"); // fallback/original
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState<any[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,22 +40,23 @@ export default function EditSamplePage() {
         const data = await getSampleById(id);
 
         // data may include translations object or localized strings
-        const translations = (data as any).translations || {};
+        const dto = data as Sample;
+        const translations = dto.translations || {};
         const titleObj =
           translations.title ||
-          (typeof data.title === "object"
-            ? data.title
-            : { fa: data.title || "", en: "" });
+          (typeof dto.title === "object"
+            ? dto.title
+            : { fa: dto.title || "", en: "" });
         const descObj =
           translations.description ||
-          (typeof data.description === "object"
-            ? data.description
-            : { fa: data.description || "", en: "" });
+          (typeof dto.description === "object"
+            ? dto.description
+            : { fa: dto.description || "", en: "" });
         const desObj =
           translations.des ||
-          (typeof data.des === "object"
-            ? data.des
-            : { fa: data.des || "", en: "" });
+          (typeof dto.des === "object"
+            ? dto.des
+            : { fa: dto.des || "", en: "" });
 
         setTitleFa(titleObj.fa || "");
         setTitleEn(titleObj.en || "");
@@ -64,7 +66,7 @@ export default function EditSamplePage() {
         setDesFa(desObj.fa || "");
         setDesEn(desObj.en || "");
 
-        setLang((data as any).lang || "fa");
+        setLang(dto.lang || "fa");
 
         if (Array.isArray(data.images)) {
           setImages(data.images);
@@ -116,7 +118,7 @@ export default function EditSamplePage() {
       }
 
       // Build translated payloads. Send as objects (API accepts object or JSON string)
-      const payload: any = {
+      const payload = {
         title: { fa: titleFa.trim(), en: titleEn.trim() },
         description: { fa: descriptionFa, en: descriptionEn },
         des: { fa: desFa.trim(), en: desEn.trim() },
@@ -125,6 +127,7 @@ export default function EditSamplePage() {
         videoUrl: videoUrlToSend,
       };
 
+      // Ensure API receives per-field objects (backend accepts both)
       await updateSample(id, payload);
       toast.success("نمونه‌کار با موفقیت ویرایش شد!");
       router.push("/dashboard/samples");
@@ -144,14 +147,6 @@ export default function EditSamplePage() {
           <label className="block mb-1 font-semibold">
             نمایش و ویرایش زبان
           </label>
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value as "fa" | "en")}
-            className="w-full border rounded px-3 py-2 mb-3"
-          >
-            <option value="fa">فارسی (fa)</option>
-            <option value="en">English (en)</option>
-          </select>
         </div>
 
         <div>

@@ -75,23 +75,18 @@ export default function Samples() {
             <SampleCard
               id={sm._id}
               title={
-                (sm as any).translations?.title ??
-                (typeof sm.title === "string"
+                typeof sm.title === "string"
                   ? { fa: sm.title, en: "" }
-                  : sm.title)
+                  : sm.title
               }
               category={sm.category || ""}
               cover={sm.cover}
               description={
-                (sm as any).translations?.description ??
-                (typeof sm.description === "string"
+                typeof sm.description === "string"
                   ? { fa: sm.description, en: "" }
-                  : sm.description)
+                  : sm.description
               }
-              des={
-                (sm as any).translations?.des ??
-                (typeof sm.des === "string" ? { fa: sm.des, en: "" } : sm.des)
-              }
+              des={typeof sm.des === "string" ? { fa: sm.des, en: "" } : sm.des}
             />
           </Link>
         ))}

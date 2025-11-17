@@ -49,19 +49,16 @@ export default function SampleDetailSection({ item }: { item: PortfolioItem }) {
   };
 
   // Title / description / summary selection
-  // Prefer translations object (managed in panel/backend) when available,
-  // otherwise fall back to top-level fields (legacy support).
-  const displayTitle = item.translations?.title
-    ? pickTranslated(item.translations.title)
-    : pickTranslated(item.title);
+  // Use per-field translated objects (title, description, des) directly.
+  // Backend now returns these fields as { fa, en } objects; legacy string
+  // values are still supported by pickTranslated.
+  const displayTitle = pickTranslated(item.title);
 
-  const displayDes = item.translations?.des
-    ? pickTranslated(item.translations.des)
-    : pickTranslated(item.des);
+  const displayDes = pickTranslated(item.des);
 
-  // description may be HTML string (legacy) or an object. Prefer translations if present.
+  // description may be HTML string (legacy) or an object.
   const descriptionHtml = (() => {
-    const descSource = item.translations?.description ?? item.description;
+    const descSource = item.description;
     if (!descSource) return "";
     if (typeof descSource === "string") return descSource;
     return pickTranslated(descSource);

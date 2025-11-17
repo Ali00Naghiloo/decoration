@@ -120,21 +120,6 @@ export default function NewSamplePage() {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Language switcher for editing */}
-        <div>
-          <label className="block mb-1 font-semibold">
-            نمایش و ویرایش زبان
-          </label>
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value as "fa" | "en")}
-            className="w-full border rounded px-3 py-2"
-          >
-            <option value="fa">فارسی (fa)</option>
-            <option value="en">English (en)</option>
-          </select>
-        </div>
-
         <div>
           <h2 className="text-lg font-semibold mb-2">
             ترجمه‌ها / Translations

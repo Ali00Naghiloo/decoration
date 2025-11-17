@@ -25,8 +25,9 @@ export const deleteSample = async (id: string): Promise<void> => {
 };
 // Function to create a new sample
 export const createSample = async (data: {
-  title: string;
-  description: string;
+  // accept either legacy localized string or per-language object
+  title: { fa?: string; en?: string } | string;
+  description: { fa?: string; en?: string } | string;
 }) => {
   await api.post("/samples", data);
 };
@@ -34,8 +35,9 @@ export const createSample = async (data: {
 export const updateSample = async (
   id: string,
   data: {
-    title: string;
-    description: string;
+    // accept either legacy localized string or per-language object for flexibility
+    title: { fa?: string; en?: string } | string;
+    description: { fa?: string; en?: string } | string;
     images?: string[];
     videoUrl?: string;
   }
