@@ -22,38 +22,48 @@ export interface ISample extends Document {
 
 const sampleSchema = new Schema<ISample>(
   {
-    title: {
-      fa: { type: String, required: true, trim: true },
-      en: { type: String, default: "" },
-    },
-    slug: { type: String, unique: true },
-    description: {
-      fa: { type: String, required: true },
-      en: { type: String, default: "" },
-    },
+    // Allow both legacy string and per-language object by using Mixed;
+    // higher-level controllers normalize to { fa?, en? } shape before saving,
+    // but schema accepts either to avoid cast errors for legacy docs.
+    title: { type: Schema.Types.Mixed, required: true },
+    slug: { type: String, unique: true, required: true },
+    description: { type: Schema.Types.Mixed },
     images: [{ type: String }], // آرایه عکس‌ها
     cover: { type: String }, // عکس کاور
     videoUrl: { type: String }, // آدرس ویدیو
     mediaUrl: { type: String },
     mediaType: [{ type: String, enum: ["image", "video"] }],
     status: { type: Number, default: 1 }, // 1: نمایش داده شود، 0: نمایش داده نشود
-    des: {
-      fa: { type: String, default: "" },
-      en: { type: String, default: "" },
-    },
+    des: { type: Schema.Types.Mixed },
     lang: { type: String, enum: ["fa", "en"], default: "fa" }, // fallback language
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    // Optimize queries
+    toJSON: { virtuals: false },
+    toObject: { virtuals: false },
+  }
 ); // Automatically adds createdAt and updatedAt
 
-// Create a URL-friendly slug from the title before saving
+// Add compound index for better performance
+sampleSchema.index({ status: 1, createdAt: -1 });
+sampleSchema.index({ lang: 1, status: 1 });
+
+// Validation for required fields
 sampleSchema.pre("save", function (next) {
-  if (this.isModified("title")) {
-    // title may be an object now; pick the first non-empty value for slug
-    const t: any = (this as any).title || {};
-    const base = (t.fa && t.fa.trim()) || (t.en && t.en.trim()) || "";
-    this.slug = slugify(base, { lower: true, strict: true });
+  const title = this.title as any;
+  const description = this.description as any;
+
+  // Ensure at least one title exists
+  if (!title?.fa && !title?.en) {
+    return next(new Error("At least one title (fa or en) is required"));
   }
+
+  // Ensure at least one description exists
+  if (!description?.fa && !description?.en) {
+    return next(new Error("At least one description (fa or en) is required"));
+  }
+
   next();
 });
 

@@ -36,10 +36,12 @@ export const updateSample = async (
   id: string,
   data: {
     // accept either legacy localized string or per-language object for flexibility
-    title: { fa?: string; en?: string } | string;
-    description: { fa?: string; en?: string } | string;
+    title?: { fa?: string; en?: string } | string;
+    description?: { fa?: string; en?: string } | string;
+    des?: { fa?: string; en?: string } | string;
     images?: string[];
     videoUrl?: string;
+    lang?: string;
   }
 ) => {
   await api.put(`/samples/${id}`, data);

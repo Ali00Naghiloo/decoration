@@ -33,6 +33,65 @@ export default function SamplesPage() {
 
   const samples = samplesData?.items || [];
 
+  // Helper: parse a stored translated field which may be:
+  // - an object { fa, en }
+  // - a JSON-stringified object
+  // - a legacy single-language string (assume fa)
+  const parseTranslated = (v: unknown): { fa: string; en: string } => {
+    const empty = { fa: "", en: "" };
+    if (v == null) return empty;
+    if (typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      return { fa: String(o.fa || ""), en: String(o.en || "") };
+    }
+    if (typeof v === "string") {
+      const t0 = v.trim();
+      if (!t0) return empty;
+      // try parse JSON (handle double-encoded too)
+      let t: string = t0;
+      for (let i = 0; i < 2; i++) {
+        if (t.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(t);
+            if (typeof parsed === "object" && parsed !== null) {
+              const p = parsed as Record<string, unknown>;
+              return { fa: String(p.fa || ""), en: String(p.en || "") };
+            }
+            if (typeof parsed === "string") {
+              t = parsed.trim();
+              continue;
+            }
+          } catch {
+            // not JSON - treat as legacy
+          }
+        }
+        break;
+      }
+      // legacy single-language string -> treat as fa
+      return { fa: v, en: "" };
+    }
+    return empty;
+  };
+
+  const getTitleString = (v: unknown) => {
+    const p = parseTranslated(v);
+    return p.fa || p.en || "";
+  };
+
+  const formatDate = (value: unknown) => {
+    try {
+      const d = new Date(String(value));
+      if (isNaN(d.getTime())) return "";
+      return new Intl.DateTimeFormat("fa-IR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }).format(d);
+    } catch {
+      return "";
+    }
+  };
+
   // 2. Setting up the mutation for deleting a sample
   const deleteMutation = useMutation({
     mutationFn: deleteSample,
@@ -114,10 +173,10 @@ export default function SamplesPage() {
             {samples && samples.length > 0 ? (
               samples.map((sample: Sample) => (
                 <TableRow key={sample._id}>
-                  <TableCell className="font-medium">{sample.title}</TableCell>
-                  <TableCell>
-                    {new Date(sample.createdAt).toLocaleDateString()}
+                  <TableCell className="font-medium">
+                    {getTitleString(sample.title)}
                   </TableCell>
+                  <TableCell>{formatDate(sample.createdAt)}</TableCell>
                   <TableCell>
                     <Button
                       size="sm"

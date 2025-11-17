@@ -44,6 +44,37 @@ const normalizeUrls = (urls: string[] | undefined): string[] => {
   return urls.map((url) => normalizeUrl(url)).filter(Boolean) as string[];
 };
 
+// Helper: if a stored field can be either a legacy string or a JSON-stringified object,
+// normalize it to an object { fa: string, en: string }.
+const normalizeStoredTranslated = (val: any): { fa: string; en: string } => {
+  // default empty object
+  const empty = { fa: "", en: "" };
+  if (val == null) return empty;
+
+  // already an object with fa/en
+  if (typeof val === "object") {
+    return { fa: val.fa || "", en: val.en || "" };
+  }
+
+  // if it's a string, try to parse JSON first
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (!trimmed) return empty;
+    if (trimmed.startsWith("{")) {
+      try {
+        const p = JSON.parse(trimmed);
+        return { fa: p.fa || "", en: p.en || "" };
+      } catch {
+        // fallthrough to legacy string handling
+      }
+    }
+    // legacy single-language string -> assume fa by default (existing behavior)
+    return { fa: val, en: "" };
+  }
+
+  return empty;
+};
+
 // --- CREATE ---
 export const createPortfolioItem = async (
   req: Request & { files?: any },
@@ -51,30 +82,45 @@ export const createPortfolioItem = async (
   next: NextFunction
 ) => {
   try {
-    const { title, description, status, des, lang } = req.body;
+    const { title, description, status, des, lang, slug } = req.body;
 
-    // Helper: parse a possible JSON-stringified object or plain string into a translated-field object
+    // Helper: parse and clean translations - only keep non-empty values
     const parseMaybeTranslated = (val: any, fallbackLang: string) => {
-      if (!val) return { fa: "", en: "" };
+      const out: any = {};
+
+      if (!val) return out;
+
       if (typeof val === "object") {
-        return { fa: val.fa || "", en: val.en || "" };
+        if (val.fa && val.fa.trim()) out.fa = val.fa.trim();
+        if (val.en && val.en.trim()) out.en = val.en.trim();
+        return out;
       }
+
       if (typeof val === "string") {
         const trimmed = val.trim();
+        if (!trimmed) return out;
+
         // try parse JSON
         if (trimmed.startsWith("{")) {
           try {
             const p = JSON.parse(trimmed);
-            return { fa: p.fa || "", en: p.en || "" };
+            if (p.fa && p.fa.trim()) out.fa = p.fa.trim();
+            if (p.en && p.en.trim()) out.en = p.en.trim();
+            return out;
           } catch {
             // not JSON — treat as single-language string
           }
         }
-        return fallbackLang === "en"
-          ? { fa: "", en: trimmed }
-          : { fa: trimmed, en: "" };
+
+        // Single language string
+        if (fallbackLang === "en") {
+          out.en = trimmed;
+        } else {
+          out.fa = trimmed;
+        }
       }
-      return { fa: "", en: "" };
+
+      return out;
     };
 
     if (!title || !description) {
@@ -83,16 +129,28 @@ export const createPortfolioItem = async (
 
     const normalizedLang = lang === "en" ? "en" : "fa";
 
-    // Parse fields (supports both legacy single-string and new translated-object payloads)
+    // Parse fields - only include non-empty translations
     const titleObj = parseMaybeTranslated(title, normalizedLang);
     const desObj = parseMaybeTranslated(des, normalizedLang);
     const descParsed = parseMaybeTranslated(description, normalizedLang);
 
+    // Validate that we have at least one title and description
+    if (!titleObj.fa && !titleObj.en) {
+      return next(
+        new AppError("At least one title (fa or en) is required.", 400)
+      );
+    }
+    if (!descParsed.fa && !descParsed.en) {
+      return next(
+        new AppError("At least one description (fa or en) is required.", 400)
+      );
+    }
+
     // Sanitize and wrap description per language
     const prepareDescriptionObj = (descObj: any) => {
-      const out: any = { fa: "", en: "" };
+      const out: any = {};
       (["fa", "en"] as const).forEach((l) => {
-        const raw = descObj[l] || "";
+        const raw = descObj[l];
         if (raw && raw.trim()) {
           const sanitizedInner = purify.sanitize(raw, {
             ADD_ATTR: ["style", "class", "lang", "dir"],
@@ -100,8 +158,6 @@ export const createPortfolioItem = async (
           out[l] = `<div lang="${l}" dir="${
             l === "fa" ? "rtl" : "ltr"
           }" class="sample-content">${sanitizedInner}</div>`;
-        } else {
-          out[l] = "";
         }
       });
       return out;
@@ -177,19 +233,10 @@ export const getPortfolioItemById = async (
     const videoUrl = normalizeUrl(obj.videoUrl);
     const mediaUrl = normalizeUrl(obj.mediaUrl);
 
-    // Support legacy schema where title/description/des were plain strings
-    const titleObj =
-      typeof obj.title === "string"
-        ? { fa: obj.title, en: "" }
-        : { fa: obj.title?.fa || "", en: obj.title?.en || "" };
-    const descObj =
-      typeof obj.description === "string"
-        ? { fa: obj.description, en: "" }
-        : { fa: obj.description?.fa || "", en: obj.description?.en || "" };
-    const desObj =
-      typeof obj.des === "string"
-        ? { fa: obj.des, en: "" }
-        : { fa: obj.des?.fa || "", en: obj.des?.en || "" };
+    // Support legacy schema where title/description/des were plain strings or JSON-stringified objects
+    const titleObj = normalizeStoredTranslated(obj.title);
+    const descObj = normalizeStoredTranslated(obj.description);
+    const desObj = normalizeStoredTranslated(obj.des);
 
     // Response returns full translated objects for each field so clients
     // can choose the appropriate language or display both.
@@ -238,18 +285,9 @@ export const getAllPortfolioItems = async (
     const itemsWithCover = items.map((item: any) => {
       const obj = item.toObject ? item.toObject() : item;
 
-      const titleObj =
-        typeof obj.title === "string"
-          ? { fa: obj.title, en: "" }
-          : { fa: obj.title?.fa || "", en: obj.title?.en || "" };
-      const descObj =
-        typeof obj.description === "string"
-          ? { fa: obj.description, en: "" }
-          : { fa: obj.description?.fa || "", en: obj.description?.en || "" };
-      const desObj =
-        typeof obj.des === "string"
-          ? { fa: obj.des, en: "" }
-          : { fa: obj.des?.fa || "", en: obj.des?.en || "" };
+      const titleObj = normalizeStoredTranslated(obj.title);
+      const descObj = normalizeStoredTranslated(obj.description);
+      const desObj = normalizeStoredTranslated(obj.des);
 
       return {
         ...obj,
@@ -290,37 +328,74 @@ export const updatePortfolioItem = async (
     }
 
     const parseMaybeTranslated = (val: any, fallbackLang: string) => {
-      if (!val) return { fa: "", en: "" };
+      const out: any = {};
+
+      if (!val) return out;
+
       if (typeof val === "object") {
-        return { fa: val.fa || "", en: val.en || "" };
+        if (val.fa && val.fa.trim()) out.fa = val.fa.trim();
+        if (val.en && val.en.trim()) out.en = val.en.trim();
+        return out;
       }
+
       if (typeof val === "string") {
         const trimmed = val.trim();
+        if (!trimmed) return out;
+
         if (trimmed.startsWith("{")) {
           try {
             const p = JSON.parse(trimmed);
-            return { fa: p.fa || "", en: p.en || "" };
+            if (p.fa && p.fa.trim()) out.fa = p.fa.trim();
+            if (p.en && p.en.trim()) out.en = p.en.trim();
+            return out;
           } catch {
             // not JSON
           }
         }
-        return fallbackLang === "en"
-          ? { fa: "", en: trimmed }
-          : { fa: trimmed, en: "" };
+
+        if (fallbackLang === "en") {
+          out.en = trimmed;
+        } else {
+          out.fa = trimmed;
+        }
       }
-      return { fa: "", en: "" };
+
+      return out;
     };
 
-    // Update title
+    // Update title - merge with existing, only keep non-empty values
     if (typeof req.body.title !== "undefined") {
       const titleObj = parseMaybeTranslated(
         req.body.title,
         (req.body.lang as string) || item.lang || "fa"
       );
-      item.title = {
-        fa: titleObj.fa || item.title?.fa || "",
-        en: titleObj.en || item.title?.en || "",
-      } as any;
+
+      // If stored title is a legacy string, convert it to the object shape first
+      if (typeof item.title === "string") {
+        const prev = item.title as string;
+        const storedLang = (item.lang as string) || "fa";
+        item.title = (
+          storedLang === "en" ? { fa: "", en: prev } : { fa: prev, en: "" }
+        ) as any;
+      }
+
+      const currentTitle = (item.title as any) || {};
+
+      if (titleObj.fa && titleObj.fa.trim()) {
+        item.set("title.fa", titleObj.fa);
+      } else if (currentTitle.fa) {
+        item.set("title.fa", currentTitle.fa);
+      } else {
+        item.set("title.fa", undefined);
+      }
+
+      if (titleObj.en && titleObj.en.trim()) {
+        item.set("title.en", titleObj.en);
+      } else if (currentTitle.en) {
+        item.set("title.en", currentTitle.en);
+      } else {
+        item.set("title.en", undefined);
+      }
     }
 
     // Update description (sanitize and wrap per language)
@@ -330,9 +405,9 @@ export const updatePortfolioItem = async (
         (req.body.lang as string) || item.lang || "fa"
       );
       const prepareDescriptionObj = (descObj: any) => {
-        const out: any = { fa: "", en: "" };
+        const out: any = {};
         (["fa", "en"] as const).forEach((l) => {
-          const raw = descObj[l] || "";
+          const raw = descObj[l];
           if (raw && raw.trim()) {
             const inner = purify.sanitize(raw, {
               ADD_ATTR: ["style", "class", "lang", "dir"],
@@ -340,17 +415,30 @@ export const updatePortfolioItem = async (
             out[l] = `<div lang="${l}" dir="${
               l === "fa" ? "rtl" : "ltr"
             }" class="sample-content">${inner}</div>`;
-          } else {
-            out[l] = "";
           }
         });
         return out;
       };
+
       const descToSave = prepareDescriptionObj(descParsed);
-      item.description = {
-        fa: descToSave.fa || item.description?.fa || "",
-        en: descToSave.en || item.description?.en || "",
-      } as any;
+      const currentDesc = (item.description as any) || {};
+
+      // Set nested fields explicitly to avoid casting issues when description was previously a string
+      if (descToSave.fa && descToSave.fa.trim()) {
+        item.set("description.fa", descToSave.fa);
+      } else if (currentDesc.fa) {
+        item.set("description.fa", currentDesc.fa);
+      } else {
+        item.set("description.fa", undefined);
+      }
+
+      if (descToSave.en && descToSave.en.trim()) {
+        item.set("description.en", descToSave.en);
+      } else if (currentDesc.en) {
+        item.set("description.en", currentDesc.en);
+      } else {
+        item.set("description.en", undefined);
+      }
     }
 
     if (typeof req.body.status !== "undefined") item.status = req.body.status;
@@ -361,10 +449,24 @@ export const updatePortfolioItem = async (
         req.body.des,
         (req.body.lang as string) || item.lang || "fa"
       );
-      item.des = {
-        fa: desObj.fa || item.des?.fa || "",
-        en: desObj.en || item.des?.en || "",
-      } as any;
+      const currentDes = (item.des as any) || {};
+
+      // Set nested fields explicitly to avoid casting issues when des was previously a string
+      if (desObj.fa && desObj.fa.trim()) {
+        item.set("des.fa", desObj.fa);
+      } else if (currentDes.fa) {
+        item.set("des.fa", currentDes.fa);
+      } else {
+        item.set("des.fa", undefined);
+      }
+
+      if (desObj.en && desObj.en.trim()) {
+        item.set("des.en", desObj.en);
+      } else if (currentDes.en) {
+        item.set("des.en", currentDes.en);
+      } else {
+        item.set("des.en", undefined);
+      }
     }
 
     // Update language if provided and valid

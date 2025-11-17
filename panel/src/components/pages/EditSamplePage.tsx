@@ -39,24 +39,51 @@ export default function EditSamplePage() {
         const { getSampleById } = await import("@/src/lib/api");
         const data = await getSampleById(id);
 
-        // data may include translations object or localized strings
+        // data may include translations object or localized strings (possibly JSON-stringified)
         const dto = data as Sample;
         const translations = dto.translations || {};
-        const titleObj =
-          translations.title ||
-          (typeof dto.title === "object"
-            ? dto.title
-            : { fa: dto.title || "", en: "" });
+
+        const parseMaybeJson = (v: unknown): { fa: string; en: string } => {
+          const empty = { fa: "", en: "" };
+          if (v == null) return empty;
+          // If it's already an object with fa/en
+          if (typeof v === "object") {
+            const obj = v as Record<string, unknown>;
+            return { fa: String(obj.fa || ""), en: String(obj.en || "") };
+          }
+          if (typeof v === "string") {
+            let t = v.trim();
+            if (!t) return empty;
+            // Attempt to parse JSON, try up to two times to handle double-encoded strings
+            for (let i = 0; i < 2; i++) {
+              if (t.startsWith("{") || t.startsWith('"') || t.startsWith("'")) {
+                try {
+                  const parsed = JSON.parse(t);
+                  if (typeof parsed === "object" && parsed !== null) {
+                    const p = parsed as Record<string, unknown>;
+                    return { fa: String(p.fa || ""), en: String(p.en || "") };
+                  }
+                  // if parsing yields a string, try parsing that string on next iteration
+                  if (typeof parsed === "string") {
+                    t = parsed.trim();
+                    continue;
+                  }
+                } catch {
+                  // ignore and treat as legacy string below
+                }
+              }
+              break;
+            }
+            // legacy single-language string -> treat as fa
+            return { fa: v, en: "" };
+          }
+          return empty;
+        };
+
+        const titleObj = translations.title || parseMaybeJson(dto.title);
         const descObj =
-          translations.description ||
-          (typeof dto.description === "object"
-            ? dto.description
-            : { fa: dto.description || "", en: "" });
-        const desObj =
-          translations.des ||
-          (typeof dto.des === "object"
-            ? dto.des
-            : { fa: dto.des || "", en: "" });
+          translations.description || parseMaybeJson(dto.description);
+        const desObj = translations.des || parseMaybeJson(dto.des);
 
         setTitleFa(titleObj.fa || "");
         setTitleEn(titleObj.en || "");
@@ -117,15 +144,46 @@ export default function EditSamplePage() {
         videoUrlToSend = videoUrl;
       }
 
-      // Build translated payloads. Send as objects (API accepts object or JSON string)
-      const payload = {
-        title: { fa: titleFa.trim(), en: titleEn.trim() },
-        description: { fa: descriptionFa, en: descriptionEn },
-        des: { fa: desFa.trim(), en: desEn.trim() },
+      // Helper: only include non-empty translations
+      const makeTranslations = (fa: string, en: string) => {
+        const out: { fa?: string; en?: string } = {};
+        if (fa && fa.trim()) out.fa = fa.trim();
+        if (en && en.trim()) out.en = en.trim();
+        return out;
+      };
+
+      // Validate that at least one title and description exist
+      if (!titleFa.trim() && !titleEn.trim()) {
+        toast.error("حداقل یکی از عنوان‌ها را وارد کنید (fa یا en).");
+        return;
+      }
+      if (!descriptionFa.trim() && !descriptionEn.trim()) {
+        toast.error("حداقل یکی از توضیحات را وارد کنید (fa یا en).");
+        return;
+      }
+
+      const titleObj = makeTranslations(titleFa, titleEn);
+      const descriptionObj = makeTranslations(descriptionFa, descriptionEn);
+      const desObj = makeTranslations(desFa, desEn);
+
+      // Build payload with only populated translation keys (send translations as JSON strings)
+      const payload: {
+        title?: string;
+        description?: string;
+        des?: string;
+        lang?: string;
+        images?: string[];
+        videoUrl?: string;
+      } = {
         lang,
         images: uploadedImages,
         videoUrl: videoUrlToSend,
       };
+      if (Object.keys(titleObj).length)
+        payload.title = JSON.stringify(titleObj);
+      if (Object.keys(descriptionObj).length)
+        payload.description = JSON.stringify(descriptionObj);
+      if (Object.keys(desObj).length) payload.des = JSON.stringify(desObj);
 
       // Ensure API receives per-field objects (backend accepts both)
       await updateSample(id, payload);

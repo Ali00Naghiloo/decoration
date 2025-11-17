@@ -50,29 +50,57 @@ export default function NewSamplePage() {
     try {
       const formData = new FormData();
 
+      // Helper: only include non-empty translations to avoid storing empty strings
+      const makeTranslations = (fa: string, en: string) => {
+        const out: { fa?: string; en?: string } = {};
+        if (fa && fa.trim()) out.fa = fa.trim();
+        if (en && en.trim()) out.en = en.trim();
+        return out;
+      };
+
+      const titleObj = makeTranslations(titleFa, titleEn);
+      const descriptionObj = makeTranslations(descriptionFa, descriptionEn);
+      const desObj = makeTranslations(desFa, desEn);
+
       // send translated fields as JSON strings so backend can detect objects
-      formData.append(
-        "title",
-        JSON.stringify({ fa: titleFa.trim(), en: titleEn.trim() })
-      );
-      formData.append(
-        "description",
-        JSON.stringify({ fa: descriptionFa, en: descriptionEn })
-      );
-      formData.append(
-        "des",
-        JSON.stringify({ fa: desFa.trim(), en: desEn.trim() })
-      );
+      if (Object.keys(titleObj).length) {
+        formData.append("title", JSON.stringify(titleObj));
+      }
+      if (Object.keys(descriptionObj).length) {
+        formData.append("description", JSON.stringify(descriptionObj));
+      }
+      if (Object.keys(desObj).length) {
+        formData.append("des", JSON.stringify(desObj));
+      }
 
       // also include an explicit `translations` object for clarity (backend will accept title/description/des separately)
-      formData.append(
-        "translations",
-        JSON.stringify({
-          title: { fa: titleFa.trim(), en: titleEn.trim() },
-          description: { fa: descriptionFa, en: descriptionEn },
-          des: { fa: desFa.trim(), en: desEn.trim() },
-        })
-      );
+      const translationsPayload: Record<string, { fa?: string; en?: string }> =
+        {};
+      if (Object.keys(titleObj).length) translationsPayload.title = titleObj;
+      if (Object.keys(descriptionObj).length)
+        translationsPayload.description = descriptionObj;
+      if (Object.keys(desObj).length) translationsPayload.des = desObj;
+
+      formData.append("translations", JSON.stringify(translationsPayload));
+
+      // Generate a client-side slug to avoid backend duplicate-key errors.
+      // Use provided title (fa first, then en) and append a short unique suffix.
+      const slugifySimple = (s: string) =>
+        s
+          .toString()
+          .toLowerCase()
+          .normalize("NFKD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9\u0600-\u06FF\s-]/g, "")
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
+
+      const baseTitle = (titleObj.fa || titleObj.en || "").slice(0, 120);
+      const baseSlug = slugifySimple(baseTitle) || "sample";
+      const uniqueSuffix = Date.now().toString(36);
+      const clientSlug = `${baseSlug}-${uniqueSuffix}`;
+      formData.append("slug", clientSlug);
 
       formData.append("lang", lang); // fallback/original language
       formData.append("status", status.toString());
