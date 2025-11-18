@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Sample } from "../models/Sample.model";
+import slugify from "slugify";
 import { AppError } from "../utils/AppError";
 import { JSDOM } from "jsdom";
 import DOMPurify from "dompurify";
@@ -165,6 +166,18 @@ export const createPortfolioItem = async (
 
     const descriptionObj = prepareDescriptionObj(descParsed);
 
+    // generate slug (use provided slug if present, otherwise create one from title + suffix)
+    const baseSlugTitle = (titleObj.fa || titleObj.en || "sample").slice(
+      0,
+      120
+    );
+    const generatedSlug =
+      slugify(baseSlugTitle, { lower: true, strict: false }) +
+      "-" +
+      Date.now().toString(36);
+    const itemSlug =
+      slug && String(slug).trim() ? String(slug).trim() : generatedSlug;
+
     // ذخیره چند عکس و انتخاب کاور
     let images: string[] = [];
     let cover: string | undefined = undefined;
@@ -191,6 +204,7 @@ export const createPortfolioItem = async (
 
     const newItem = await Sample.create({
       title: { fa: titleObj.fa || "", en: titleObj.en || "" },
+      slug: itemSlug,
       description: { fa: descriptionObj.fa || "", en: descriptionObj.en || "" },
       images,
       cover,

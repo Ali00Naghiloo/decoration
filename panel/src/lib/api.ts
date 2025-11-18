@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Sample } from "@/src/types"; // Import our new type
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL:
+    process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.rokhnegar.art/api",
 });
 // Interceptor to add the JWT token (remains the same)
 api.interceptors.request.use((config) => {
