@@ -2,14 +2,14 @@
 
 "use client";
 
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import type { NavigationOptions } from "swiper/types";
 import Image from "next/image";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import React, { useState } from "react";
 import { Video } from "../ui/video";
 
@@ -50,10 +50,6 @@ export default function MediaSlider({ media }: { media: MediaItem[] }) {
       }
     }
   }, [loading]);
-
-  if (loading) {
-    return <div>Loading media...</div>;
-  }
 
   if (!media || media.length === 0) {
     return null;

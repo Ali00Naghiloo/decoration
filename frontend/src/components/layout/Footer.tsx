@@ -6,16 +6,12 @@ import Image from "next/image";
 import { LogIn, MoveUp, Phone } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
 import { useTranslation } from "@/src/hooks/useTranslation";
+import { SOCIALS, CONTACT_PHONE } from "@/src/config/socials";
 
 export default function Footer() {
   const { t } = useTranslation();
 
-  const socials = [
-    { label: "Facebook", icon: "/icons/facebook.svg", link: "#" },
-    { label: "Instagram", icon: "/icons/instagram.svg", link: "#" },
-    { label: "LinkedIn", icon: "/icons/linkedin.svg", link: "#" },
-    { label: "X", icon: "/icons/x.svg", link: "#" },
-  ];
+  const socials = SOCIALS;
 
   const links = [
     { label: "home", selected: true },
@@ -61,12 +57,14 @@ export default function Footer() {
               </span>
             ))}
 
-            <Button
-              variant={"link"}
-              className="!p-0 mt-auto text-[rgba(255,255,255,0.4)]"
-            >
-              {t("contact-us")}
-            </Button>
+            <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
+              <Button
+                variant={"link"}
+                className="!p-0 mt-auto text-[rgba(255,255,255,0.4)]"
+              >
+                {t("contact-us")}
+              </Button>
+            </a>
           </div>
 
           <div className="flex flex-col gap-7 items-center max-w-[40%]">
@@ -76,27 +74,37 @@ export default function Footer() {
               {t("footer-text")}
             </p>
 
-            <Button
-              variant="default"
-              className="p-3 h-fit border-[1px] border-[rgba(255,255,255,0.2)] shadow-inner"
-            >
-              {t("contact")}{" "}
-              <div className="bg-blue-600 rounded-[12px] p-2">
-                <Phone />
-              </div>
-            </Button>
+            <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
+              <Button
+                variant="default"
+                className="p-3 h-fit border-[1px] border-[rgba(255,255,255,0.2)] shadow-inner"
+              >
+                {t("contact")}{" "}
+                <div className="bg-blue-600 rounded-[12px] p-2">
+                  <Phone />
+                </div>
+              </Button>
+            </a>
 
             <div className="flex gap-4 pt-10">
               {socials.map((social) => (
-                <Button key={social.label} className="w-[41px] h-[41px] p-0">
-                  <Image
-                    className="!text-white"
-                    src={social.icon}
-                    alt={social.label}
-                    width={24}
-                    height={24}
-                  />
-                </Button>
+                <a
+                  key={social.label}
+                  href={social.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block"
+                >
+                  <Button className="w-[41px] h-[41px] p-0">
+                    <Image
+                      className="!text-white"
+                      src={social.icon}
+                      alt={social.label}
+                      width={24}
+                      height={24}
+                    />
+                  </Button>
+                </a>
               ))}
             </div>
           </div>
@@ -143,15 +151,17 @@ export default function Footer() {
             {t("footer-text")}
           </p>
 
-          <Button
-            variant="default"
-            className="p-3 h-fit w-fit border-[1px] border-[rgba(255,255,255,0.2)] shadow-inner"
-          >
-            {t("contact")}{" "}
-            <div className="bg-blue-600 rounded-[12px] p-2">
-              <Phone />
-            </div>
-          </Button>
+          <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
+            <Button
+              variant="default"
+              className="p-3 h-fit w-fit border-[1px] border-[rgba(255,255,255,0.2)] shadow-inner"
+            >
+              {t("contact")}{" "}
+              <div className="bg-blue-600 rounded-[12px] p-2">
+                <Phone />
+              </div>
+            </Button>
+          </a>
         </div>
 
         {/* links */}
@@ -170,15 +180,23 @@ export default function Footer() {
 
         <div className="flex gap-4">
           {socials.map((social) => (
-            <Button key={social.label} className="w-[30px] h-[30px] p-0">
-              <Image
-                className="!text-white"
-                src={social.icon}
-                alt={social.label}
-                width={18}
-                height={18}
-              />
-            </Button>
+            <a
+              key={social.label}
+              href={social.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block"
+            >
+              <Button className="w-[30px] h-[30px] p-0">
+                <Image
+                  className="!text-white"
+                  src={social.icon}
+                  alt={social.label}
+                  width={18}
+                  height={18}
+                />
+              </Button>
+            </a>
           ))}
         </div>
 

@@ -1,7 +1,9 @@
+"use client";
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-
+import { useLocale } from "next-intl";
+ 
 import { cn } from "@/src/lib/utils";
 
 const buttonVariants = cva(
@@ -46,10 +48,13 @@ function Button({
     asChild?: boolean;
   }) {
   const Comp = asChild ? Slot : "button";
+  const rawLocale = useLocale() || "fa";
+  const dir = (rawLocale as string).toString().startsWith("fa") ? "rtl" : "ltr";
 
   return (
     <Comp
       data-slot="button"
+      dir={dir}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

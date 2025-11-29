@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { ArrowDown } from "lucide-react";
+import { TextAnimate } from "../ui/TextAnimate";
 import { useTranslation } from "@/src/hooks/useTranslation";
 
 export default function HeroSection() {
@@ -76,8 +77,16 @@ export default function HeroSection() {
           >
             {t("customer-stories")}
           </Badge>
-          <h1 className="text-4xl xl:text-6xl font-bold">{t("title")}</h1>
-          <p className="mt-4 text-lg">{t("description")}</p>
+          <TextAnimate
+            as="h1"
+            className="text-4xl xl:text-6xl font-bold"
+            by="word"
+          >
+            {t("title")}
+          </TextAnimate>
+          <TextAnimate as="p" className="mt-4 text-lg" by="word">
+            {t("description")}
+          </TextAnimate>
           <div className="flex gap-2 xl:gap-10 items-center">
             <Button
               onClick={() => scrollToSection("samples", 80, 1000)}

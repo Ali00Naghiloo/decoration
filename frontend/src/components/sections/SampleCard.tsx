@@ -1,6 +1,7 @@
 import { useTranslation } from "@/src/hooks/useTranslation";
 import Image from "next/image";
 import { useLocale } from "next-intl";
+import { Link } from "@/src/i18n/navigation";
 
 /**
  * TranslatedString may be a plain string (legacy) or an object with
@@ -18,6 +19,7 @@ interface SampleCardProps {
   cover?: string;
   description?: TranslatedString;
   des?: TranslatedString;
+  href?: string;
 }
 
 export default function SampleCard({
@@ -26,6 +28,7 @@ export default function SampleCard({
   cover,
   description,
   des,
+  href,
 }: SampleCardProps) {
   const { t } = useTranslation();
   const rawLocale = useLocale() || "fa";
@@ -76,13 +79,54 @@ export default function SampleCard({
         {showDescription && (
           <div className="text-gray-500 text-[1em] mt-2 line-clamp-2">
             {displayDes && displayDes.length > 50
-              ? `${displayDes.slice(0, 70)}...`
+              ? `${displayDes.slice(0, 200)}...`
               : displayDes}
           </div>
         )}
-        <span className="flex items-center underline mt-auto gap-2 p-2 text-blue-600 cursor-pointer">
-          {t("read-more")}
-        </span>
+        {href ? (
+          <Link
+            href={href}
+            className="mt-auto inline-flex items-center gap-2 px-3 py-2 rounded-md text-[#006FFF] border border-[#006FFF] hover:bg-[#006FFF] hover:text-white transition-colors duration-150"
+          >
+            {t("read-more")}
+            <svg
+              className={`w-4 h-4 transform transition-transform ${
+                locale === "fa" ? "rotate-180" : ""
+              }`}
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12h14M13 5l7 7-7 7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+        ) : (
+          <span className="mt-auto inline-flex items-center gap-2 px-3 py-2 rounded-md text-[#006FFF] opacity-80">
+            {t("read-more")}
+            <svg
+              className={`w-4 h-4 transform transition-transform ${
+                locale === "fa" ? "rotate-180" : ""
+              }`}
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12h14M13 5l7 7-7 7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        )}
       </div>
     </div>
   );

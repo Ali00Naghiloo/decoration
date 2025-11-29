@@ -7,58 +7,62 @@ import { useEffect, useState } from "react";
 import { Link } from "@/src/i18n/navigation";
 import { apiFetch } from "@/src/lib/api";
 import { useLocale } from "next-intl";
-
-type MaybeTranslated = string | { fa?: string; en?: string };
+import Skeleton from "../ui/Skeleton";
 
 interface PortfolioItem {
   _id: string;
-  title: MaybeTranslated;
-  description?: MaybeTranslated;
-  des?: MaybeTranslated;
+  title: string;
+  description?: string;
+  des?: string;
   category?: string;
   cover?: string;
 }
 
 export default function Samples() {
   const { t } = useTranslation();
-  const locale = useLocale() || "fa";
+  // call hook at top-level and derive a stable normalized locale
+  const rawLocale = useLocale() || "fa";
+  const normalizedLocale = (rawLocale as string).toString().startsWith("fa")
+    ? "fa"
+    : "en";
+
   const [samples, setSamples] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // normalize locale ("fa-IR" or "en-US" => "fa" | "en") before sending to API
-    const normalizedLocale = (locale as string).toString().startsWith("fa")
-      ? "fa"
-      : "en";
-
-    // ask backend for items in the current locale; backend will also include `translations`
+    // ask backend for items in the current normalized locale; backend will include `translations`
     apiFetch(`/samples?locale=${normalizedLocale}`).then(({ data }) => {
-      try {
-        // debug: inspect returned shape to ensure translations exist and localized fields are set
-        // eslint-disable-next-line no-console
-        console.log("[Samples] fetched", {
-          normalizedLocale,
-          isArray: Array.isArray(data),
-          firstItem: Array.isArray(data) && data.length > 0 ? data[0] : data,
-        });
-      } catch (e) {
-        // ignore
-      }
-
       if (Array.isArray(data)) {
-        setSamples(data as PortfolioItem[]);
+        setSamples(data);
       }
       setLoading(false);
     });
-  }, [locale]);
+  }, [normalizedLocale]);
 
   return (
     <div id="samples" className="flex flex-col items-center gap-5 py-10">
+      <Badge
+        className={
+          "bg-[rgba(0,111,255,0.04)] text-[#006FFF] px-4 py-2 rounded-[100px]"
+        }
+      >
+        {t("customer-stories")}
+      </Badge>
+
+      <div className="font-bold text-4xl xl:text-6xl">
+        {t("all-customer")}{" "}
+        <span className="text-[#006FFF]">{t("stories")}</span>
+      </div>
+
       <div className="w-full flex gap-8 flex-wrap py-5 lg:p-20">
         {loading && (
-          <div className="w-full flex justify-center text-gray-400">
-            {t("loading-samples")}
-          </div>
+          <>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="w-[290px] xl:w-[420px] h-auto mx-auto">
+                <Skeleton variant="card" />
+              </div>
+            ))}
+          </>
         )}
         {!loading && samples.length === 0 && (
           <div className="w-full flex justify-center text-gray-400">
@@ -69,7 +73,7 @@ export default function Samples() {
           <Link
             key={sm._id}
             href={`/samples/${sm._id}`}
-            className="cursor-pointer"
+            className="cursor-pointer mx-auto md:mx-0"
             style={{ textDecoration: "none" }}
           >
             <SampleCard
