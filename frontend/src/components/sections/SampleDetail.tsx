@@ -91,7 +91,9 @@ export default function SampleDetailSection({
                 }`}
               >
                 <ChevronLeft fontSize="1.25rem" />
-                {t("back")}
+                <TextAnimate as="span" by="word">
+                  {t("back")}
+                </TextAnimate>
               </Button>
             </Link>
           </div>
@@ -123,31 +125,38 @@ export default function SampleDetailSection({
 
         {/* socials */}
         <div className="lg:mb-48 mb-10 flex gap-4 items-center">
-          <span className="mr-4">{t("share")}</span>
+          <TextAnimate as="span" by="word" className="mr-4">
+            {t("share")}
+          </TextAnimate>
 
           <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
             <Button variant="default" className="flex items-center gap-2">
               <Phone />
+              <TextAnimate as="span" by="word">
+                {t("contact")}
+              </TextAnimate>
             </Button>
           </a>
 
-          {SOCIALS.map((social) => (
-            <a
-              key={social.label}
-              href={social.link}
-              target="_blank"
-              className="bg-[#F8F8F8] rounded-full p-2 flex justify-center items-center"
-              rel="noopener noreferrer"
-            >
-              <Image
-                src={social.icon}
-                alt={social.label}
-                className="w-5 h-5 brightness-0"
-                width={24}
-                height={24}
-              />
-            </a>
-          ))}
+          {SOCIALS.filter((s) => !!s.link && s.link.trim().length > 0).map(
+            (social) => (
+              <a
+                key={social.label}
+                href={social.link}
+                target="_blank"
+                className="bg-[#F8F8F8] rounded-full p-2 flex justify-center items-center"
+                rel="noopener noreferrer"
+              >
+                <Image
+                  src={social.icon}
+                  alt={social.label}
+                  className="w-5 h-5 brightness-0"
+                  width={24}
+                  height={24}
+                />
+              </a>
+            )
+          )}
         </div>
       </div>
     </div>

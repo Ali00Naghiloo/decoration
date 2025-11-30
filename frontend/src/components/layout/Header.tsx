@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { LogIn, Menu, Phone } from "lucide-react";
 import LanguageSwitcher from "../sections/LanguageSwitcher";
 import { useTranslation } from "@/src/hooks/useTranslation";
+import TextAnimate from "@/src/components/ui/TextAnimate";
 import { CONTACT_PHONE, SOCIALS } from "@/src/config/socials";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -51,7 +52,9 @@ export default function Header() {
           {headerLinks.map((link) => (
             <Link href={link.href} key={link.href} className="">
               <Button variant={"link"} className="text-lg">
-                {t(link.key)}
+                <TextAnimate as="span" by="word">
+                  {t(link.key)}
+                </TextAnimate>
               </Button>
             </Link>
           ))}
@@ -62,11 +65,15 @@ export default function Header() {
 
           <Button variant={"ghost"}>
             <LogIn />
-            {t("login")}
+            <TextAnimate as="span" by="word">
+              {t("login")}
+            </TextAnimate>
           </Button>
           <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
             <Button variant="default" className="p-3 h-fit">
-              {t("contact")}{" "}
+              <TextAnimate as="span" by="word">
+                {t("contact")}
+              </TextAnimate>{" "}
               <div className="bg-blue-600 rounded-[12px] p-2">
                 <Phone />
               </div>
@@ -148,7 +155,9 @@ export default function Header() {
                         className="text-lg"
                         disabled={link.disabled}
                       >
-                        {t(link.key)}
+                        <TextAnimate as="span" by="word">
+                          {t(link.key)}
+                        </TextAnimate>
                       </Button>
                     </Link>
                   ))}
@@ -162,7 +171,9 @@ export default function Header() {
                       className="w-full flex items-center justify-center gap-2"
                     >
                       <Phone />
-                      {t("contact")}
+                      <TextAnimate as="span" by="word">
+                        {t("contact")}
+                      </TextAnimate>
                     </Button>
                   </a>
                 </motion.aside>

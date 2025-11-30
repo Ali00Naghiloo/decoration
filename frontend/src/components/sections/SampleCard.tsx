@@ -2,6 +2,7 @@ import { useTranslation } from "@/src/hooks/useTranslation";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { Link } from "@/src/i18n/navigation";
+import TextAnimate from "@/src/components/ui/TextAnimate";
 
 /**
  * TranslatedString may be a plain string (legacy) or an object with
@@ -74,21 +75,44 @@ export default function SampleCard({
       )}
 
       <div className="h-1/2 xl:px-4 flex flex-col gap-2">
-        <div className="text-2xl font-bold text-[1.3em]">{displayTitle}</div>
-        <div className="text-lg text-[#006FFF] mt-2">{category}</div>
+        <TextAnimate
+          as="div"
+          by="word"
+          className="text-2xl font-bold text-[1.3em]"
+        >
+          {displayTitle}
+        </TextAnimate>
+
+        {category && (
+          <TextAnimate
+            as="div"
+            by="word"
+            className="text-lg text-[#006FFF] mt-2"
+          >
+            {category}
+          </TextAnimate>
+        )}
+
         {showDescription && (
-          <div className="text-gray-500 text-[1em] mt-2 line-clamp-2">
+          <TextAnimate
+            as="div"
+            by="word"
+            className="text-gray-500 text-[1em] mt-2 line-clamp-2"
+          >
             {displayDes && displayDes.length > 50
               ? `${displayDes.slice(0, 200)}...`
               : displayDes}
-          </div>
+          </TextAnimate>
         )}
+
         {href ? (
           <Link
             href={href}
             className="mt-auto inline-flex items-center gap-2 px-3 py-2 rounded-md text-[#006FFF] border border-[#006FFF] hover:bg-[#006FFF] hover:text-white transition-colors duration-150"
           >
-            {t("read-more")}
+            <TextAnimate as="span" by="text">
+              {t("read-more")}
+            </TextAnimate>
             <svg
               className={`w-4 h-4 transform transition-transform ${
                 locale === "fa" ? "rotate-180" : ""
@@ -108,7 +132,9 @@ export default function SampleCard({
           </Link>
         ) : (
           <span className="mt-auto inline-flex items-center gap-2 px-3 py-2 rounded-md text-[#006FFF] opacity-80">
-            {t("read-more")}
+            <TextAnimate as="span" by="text">
+              {t("read-more")}
+            </TextAnimate>
             <svg
               className={`w-4 h-4 transform transition-transform ${
                 locale === "fa" ? "rotate-180" : ""

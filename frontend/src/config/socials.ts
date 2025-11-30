@@ -8,9 +8,11 @@ export type SocialItem = {
   link: string;
 };
 
+// Only include real links; unset/empty links are intentionally left blank so
+// UI code can filter them out before rendering.
 export const SOCIALS: SocialItem[] = [
-  { label: "Facebook", icon: "/icons/facebook.svg", link: "https://facebook.com" },
+  { label: "Facebook", icon: "/icons/facebook.svg", link: "" },
   { label: "Instagram", icon: "/icons/instagram.svg", link: INSTAGRAM_URL },
-  { label: "LinkedIn", icon: "/icons/linkedin.svg", link: "https://linkedin.com" },
-  { label: "X", icon: "/icons/x.svg", link: "https://twitter.com" },
+  { label: "LinkedIn", icon: "/icons/linkedin.svg", link: "" },
+  { label: "X", icon: "/icons/x.svg", link: "" },
 ];

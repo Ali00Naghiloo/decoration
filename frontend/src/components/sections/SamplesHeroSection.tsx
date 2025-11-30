@@ -75,7 +75,9 @@ export default function HeroSection() {
               "bg-[rgba(0,111,255,0.04)] text-[#006FFF] px-4 py-2 rounded-[100px] font-thin"
             }
           >
-            {t("customer-stories")}
+            <TextAnimate as="span" by="word">
+              {t("customer-stories")}
+            </TextAnimate>
           </Badge>
           <TextAnimate
             as="h1"
@@ -94,7 +96,9 @@ export default function HeroSection() {
               variant={"destructive"}
               className="h-fit text-[1.1em] !p-7 flex gap-3 rounded-[8px] !py-2 !pl-2 !pr-2"
             >
-              {t("ctaButton")}
+              <TextAnimate as="span" by="word">
+                {t("ctaButton")}
+              </TextAnimate>
               <div
                 className={`bg-white h-9 w-9 rounded-[12px] flex items-center justify-center`}
               >
@@ -102,7 +106,9 @@ export default function HeroSection() {
               </div>
             </Button>
             <Button variant="link" className="text-[1.1em] p-3">
-              {t("read-story")}
+              <TextAnimate as="span" by="word">
+                {t("read-story")}
+              </TextAnimate>
             </Button>
           </div>
         </div>

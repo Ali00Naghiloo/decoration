@@ -7,11 +7,12 @@ import { LogIn, MoveUp, Phone } from "lucide-react";
 import { Separator } from "@radix-ui/react-separator";
 import { useTranslation } from "@/src/hooks/useTranslation";
 import { SOCIALS, CONTACT_PHONE } from "@/src/config/socials";
+import TextAnimate from "@/src/components/ui/TextAnimate";
 
 export default function Footer() {
   const { t } = useTranslation();
 
-  const socials = SOCIALS;
+  const socials = SOCIALS.filter((s) => !!s.link && s.link.trim().length > 0);
 
   const links = [
     { label: "home", selected: true },
@@ -47,14 +48,16 @@ export default function Footer() {
           {/* links */}
           <div className="flex flex-col gap-5 font-medium">
             {links.map((li) => (
-              <span
+              <TextAnimate
+                as="span"
                 key={li.label}
+                by="word"
                 className={`${
                   li.selected ? "opacity-100" : "opacity-40"
-                } cursor-pointer`}
+                } cursor-pointer inline-block`}
               >
                 {t(li.label)}
-              </span>
+              </TextAnimate>
             ))}
 
             <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
@@ -70,9 +73,13 @@ export default function Footer() {
           <div className="flex flex-col gap-7 items-center max-w-[40%]">
             <Image src="/logo.png" alt={t("logoAlt")} width={52} height={52} />
 
-            <p className="text-center text-[rgba(255,255,255,0.4)] font-medium">
+            <TextAnimate
+              as="p"
+              className="text-center text-[rgba(255,255,255,0.4)] font-medium"
+              by="word"
+            >
               {t("footer-text")}
-            </p>
+            </TextAnimate>
 
             <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
               <Button
@@ -112,7 +119,9 @@ export default function Footer() {
           <div className="flex flex-col justify-between items-end">
             <Button variant={"default"} className="!px-8 !py-6">
               <LogIn />
-              {t("login")}
+              <TextAnimate as="span" by="word">
+                {t("login")}
+              </TextAnimate>
             </Button>
 
             <Button
@@ -131,11 +140,15 @@ export default function Footer() {
         />
 
         <div className="relative flex justify-between flex-wrap py-4">
-          <span>{t("copyright")}</span>
-          <span className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]">
-            {t("privacy-policy")}
-          </span>
-          <span>{t("terms-of-service")}</span>
+          <TextAnimate as="span" className="inline-block">
+            {t("copyright")}
+          </TextAnimate>
+          <div className="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%]">
+            <TextAnimate as="span">{t("privacy-policy")}</TextAnimate>
+          </div>
+          <TextAnimate as="span" className="inline-block">
+            {t("terms-of-service")}
+          </TextAnimate>
         </div>
 
         {/* gradient background */}
@@ -147,9 +160,13 @@ export default function Footer() {
         <div className="flex flex-col gap-3">
           <Image src="/logo.png" alt={t("logoAlt")} width={52} height={52} />
 
-          <p className="text-[rgba(255,255,255,0.4)] font-medium">
+          <TextAnimate
+            as="p"
+            className="text-[rgba(255,255,255,0.4)] font-medium"
+            by="word"
+          >
             {t("footer-text")}
-          </p>
+          </TextAnimate>
 
           <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
             <Button
@@ -167,14 +184,16 @@ export default function Footer() {
         {/* links */}
         <div className="h-[180px] flex flex-col flex-wrap gap-3 font-medium">
           {mobileLinks.map((li) => (
-            <span
+            <TextAnimate
+              as="span"
               key={li.label}
+              by="word"
               className={`${
                 li.selected ? "opacity-100" : "opacity-40"
-              } cursor-pointer`}
+              } cursor-pointer inline-block`}
             >
               {t(li.label)}
-            </span>
+            </TextAnimate>
           ))}
         </div>
 
@@ -201,7 +220,9 @@ export default function Footer() {
         </div>
 
         <div>
-          <span className="text-white">{t("copyright")}</span>
+          <TextAnimate as="span" className="text-white">
+            {t("copyright")}
+          </TextAnimate>
         </div>
 
         <div className="absolute bottom-0 left-0 w-full h-[200px] bg-gradient-to-t from-[#006AF5] to-[#000000] opacity-50"></div>

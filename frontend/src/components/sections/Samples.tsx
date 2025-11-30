@@ -8,6 +8,7 @@ import { Link } from "@/src/i18n/navigation";
 import { apiFetch } from "@/src/lib/api";
 import { useLocale } from "next-intl";
 import Skeleton from "../ui/Skeleton";
+import TextAnimate from "@/src/components/ui/TextAnimate";
 
 interface PortfolioItem {
   _id: string;
@@ -46,12 +47,22 @@ export default function Samples() {
           "bg-[rgba(0,111,255,0.04)] text-[#006FFF] px-4 py-2 rounded-[100px]"
         }
       >
-        {t("customer-stories")}
+        <TextAnimate as="span" by="word">
+          {t("customer-stories")}
+        </TextAnimate>
       </Badge>
 
       <div className="font-bold text-4xl xl:text-6xl">
-        {t("all-customer")}{" "}
-        <span className="text-[#006FFF]">{t("stories")}</span>
+        <TextAnimate as="span" by="word" className="inline-block">
+          {t("all-customer")}
+        </TextAnimate>{" "}
+        <TextAnimate
+          as="span"
+          by="word"
+          className="text-[#006FFF] inline-block"
+        >
+          {t("stories")}
+        </TextAnimate>
       </div>
 
       <div className="w-full flex gap-8 flex-wrap py-5 lg:p-20">
@@ -66,7 +77,9 @@ export default function Samples() {
         )}
         {!loading && samples.length === 0 && (
           <div className="w-full flex justify-center text-gray-400">
-            {t("no-samples-found")}
+            <TextAnimate as="span" by="word">
+              {t("no-samples-found")}
+            </TextAnimate>
           </div>
         )}
         {samples.map((sm) => (
