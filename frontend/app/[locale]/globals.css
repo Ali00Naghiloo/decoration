@@ -160,6 +160,7 @@ blockquote {
 }
 .richtext {
   text-align: justify;
+  line-height: 200% !important;
 }
 .richtext img {
   border-radius: 24px;

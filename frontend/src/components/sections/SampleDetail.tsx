@@ -132,9 +132,6 @@ export default function SampleDetailSection({
           <a href={`tel:${CONTACT_PHONE}`} className="inline-block">
             <Button variant="default" className="flex items-center gap-2">
               <Phone />
-              <TextAnimate as="span" by="word">
-                {t("contact")}
-              </TextAnimate>
             </Button>
           </a>
 

@@ -1,4 +1,4 @@
-import React, { ElementType, memo } from "react";
+import React, { ElementType, memo, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import { cn } from "@/src/lib/utils";
 
@@ -12,13 +12,16 @@ interface TextAnimateProps {
   duration?: number;
   as?: ElementType;
   by?: AnimationType;
-  once?: boolean;
+  once?: boolean; // if animateOnView is true, whether to only animate once
   accessible?: boolean;
+  animateOnView?: boolean; // when true, animation runs when element enters viewport
 }
 
 /**
  * Lightweight text animator using framer-motion.
  * Splits text by `by` and animates segments with a simple fade/slide.
+ * When `animateOnView` is true the animation will start when the element
+ * becomes visible (IntersectionObserver). Default: animateOnView = true.
  */
 const staggerTimings: Record<AnimationType, number> = {
   text: 0.06,
@@ -55,8 +58,51 @@ const TextAnimateBase = ({
   by = "word",
   once = true,
   accessible = true,
+  animateOnView = true,
 }: TextAnimateProps) => {
-  const MotionComponent = motion(Component);
+  const MotionComponent: any = motion(Component);
+  const ref = useRef<any>(null);
+  const [visible, setVisible] = useState(!animateOnView);
+
+  useEffect(() => {
+    if (!animateOnView) return;
+
+    const el = ref.current;
+    if (!el) return;
+
+    let observer: IntersectionObserver | null = null;
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            if (once && observer) {
+              observer.unobserve(entry.target);
+            }
+          } else {
+            if (!once) {
+              setVisible(false);
+            }
+          }
+        });
+      },
+      {
+        root: null,
+        // Require the element to be substantially in view before starting the animation.
+        // A conservative rootMargin and higher threshold avoids early triggering.
+        rootMargin: "0px 0px -10% 0px",
+        threshold: 0.5,
+      }
+    );
+
+    observer.observe(el as Element);
+
+    return () => {
+      if (observer && el) observer.unobserve(el as Element);
+      observer = null;
+    };
+  }, [animateOnView, once]);
 
   let segments: string[] = [];
   switch (by) {
@@ -78,10 +124,11 @@ const TextAnimateBase = ({
   return (
     <AnimatePresence>
       <MotionComponent
+        ref={ref}
         custom={delay}
         variants={containerVariants}
         initial="hidden"
-        animate="show"
+        animate={animateOnView ? (visible ? "show" : "hidden") : "show"}
         exit="exit"
         className={cn("whitespace-pre-wrap", className)}
       >
